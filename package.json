@@ -1,0 +1,33 @@
+{
+  "name": "sodium-test",
+  "version": "0.0.0",
+  "description": "Test harness for Javascript libsodium implementations",
+  "main": "index.js",
+  "dependencies": {
+    "buffer-alloc": "^1.1.0",
+    "buffer-alloc-unsafe": "^1.0.0",
+    "tape": "^4.6.3"
+  },
+  "devDependencies": {
+    "standard": "^10.0.1"
+  },
+  "scripts": {
+    "test": "standard"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sodium-friends/sodium-test.git"
+  },
+  "keywords": [
+    "libsodium",
+    "sodium",
+    "sodium-friends",
+    "tests"
+  ],
+  "author": "Emil Bay <github@tixz.dk>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sodium-friends/sodium-test/issues"
+  },
+  "homepage": "https://github.com/sodium-friends/sodium-test#readme"
+}
