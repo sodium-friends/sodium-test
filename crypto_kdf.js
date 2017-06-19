@@ -5,7 +5,8 @@ var equals = require('buffer-equals')
 
 module.exports = function (sodium) {
   tape('crypto_kdf_keygen', function (t) {
-    var key = alloc(sodium.crypto_kdf_KEYBYTES)
+    var key = alloc(sodium.crypto_kdf_KEYBYTES + 1)
+    key[sodium.crypto_kdf_KEYBYTES] = 0xdb
 
     t.throws(function () {
       sodium.crypto_kdf_keygen(alloc(1))
@@ -14,6 +15,7 @@ module.exports = function (sodium) {
     sodium.crypto_kdf_keygen(key)
 
     t.notEqual(key, alloc(key.length))
+    t.equal(key[sodium.crypto_kdf_KEYBYTES], 0xdb)
     t.end()
   })
 
