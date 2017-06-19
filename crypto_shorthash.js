@@ -158,6 +158,13 @@ var vectors = [ // generated from https://github.com/jedisct1/siphash-js/blob/ma
 ]
 
 module.exports = function (sodium) {
+  test('constants', function (assert) {
+    assert.ok(sodium.crypto_shorthash_PRIMITIVE)
+    assert.ok(sodium.crypto_shorthash_KEYBYTES > 0)
+    assert.ok(sodium.crypto_shorthash_BYTES > 0)
+    assert.end()
+  })
+
   test('crypto_shorthash fixtures', function (assert) {
     run(assert)
   })
