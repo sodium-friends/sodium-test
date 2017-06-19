@@ -1,6 +1,7 @@
 var test = require('tape')
 var alloc = require('buffer-alloc')
 var equals = require('buffer-equals')
+var freq = require('buffer-byte-frequency')
 
 module.exports = function (sodium) {
   test('Generates random bytes', function (assert) {
@@ -18,6 +19,21 @@ module.exports = function (sodium) {
     }
 
     assert.pass('Generated unique buffers')
+    assert.end()
+  })
+
+  test('Exceed quota', function (assert) {
+    var buf = alloc(1 << 17)
+    sodium.randombytes_buf(buf)
+
+    freq(buf)
+    .map(function (cnt) {
+      return (cnt / 256) | 0
+    })
+    .forEach(function (cnt) {
+      if (1 > cnt && cnt > 3) assert.fail('Statistically unreasonable')
+    })
+
     assert.end()
   })
 }
