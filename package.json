@@ -1,6 +1,6 @@
 {
   "name": "sodium-test",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Test harness for Javascript libsodium implementations",
   "main": "index.js",
   "dependencies": {
