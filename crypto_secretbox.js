@@ -1,9 +1,10 @@
 var tape = require('tape')
 var alloc = require('buffer-alloc')
+var toBuffer = require('buffer-from')
 
 module.exports = function (sodium) {
   tape('crypto_secretbox_easy', function (t) {
-    var message = new Buffer('Hej, Verden!')
+    var message = toBuffer('Hej, Verden!')
     var output = alloc(message.length + sodium.crypto_secretbox_MACBYTES)
 
     var key = alloc(sodium.crypto_secretbox_KEYBYTES)
@@ -46,13 +47,13 @@ module.exports = function (sodium) {
     t.notEqual(output, alloc(output.length))
 
     t.ok(sodium.crypto_secretbox_open_easy(output.slice(sodium.crypto_secretbox_MACBYTES), output, nonce, key), 'could decrypt')
-    t.same(output.slice(sodium.crypto_secretbox_MACBYTES), new Buffer('Hej, Verden!'), 'decrypted message is correct')
+    t.same(output.slice(sodium.crypto_secretbox_MACBYTES), toBuffer('Hej, Verden!'), 'decrypted message is correct')
 
     t.end()
   })
 
   tape('crypto_secretbox_detached', function (t) {
-    var message = new Buffer('Hej, Verden!')
+    var message = toBuffer('Hej, Verden!')
     var output = alloc(message.length)
     var mac = alloc(sodium.crypto_secretbox_MACBYTES)
 

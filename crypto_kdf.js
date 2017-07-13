@@ -1,6 +1,6 @@
 var tape = require('tape')
 var alloc = require('buffer-alloc')
-var from = require('buffer-from')
+var toBuffer = require('buffer-from')
 var equals = require('buffer-equals')
 
 module.exports = function (sodium) {
@@ -26,15 +26,15 @@ module.exports = function (sodium) {
 
     var subkey = alloc(sodium.crypto_kdf_BYTES_MIN)
 
-    sodium.crypto_kdf_derive_from_key(subkey, 0, new Buffer('context_'), key)
+    sodium.crypto_kdf_derive_from_key(subkey, 0, toBuffer('context_'), key)
     t.notEqual(subkey, alloc(subkey.length))
 
     var subkey2 = alloc(sodium.crypto_kdf_BYTES_MIN)
 
-    sodium.crypto_kdf_derive_from_key(subkey2, 1, new Buffer('context_'), key)
+    sodium.crypto_kdf_derive_from_key(subkey2, 1, toBuffer('context_'), key)
     t.notEqual(subkey, subkey2)
 
-    sodium.crypto_kdf_derive_from_key(subkey2, 0, new Buffer('context_'), key)
+    sodium.crypto_kdf_derive_from_key(subkey2, 0, toBuffer('context_'), key)
     t.same(subkey, subkey2)
 
     t.end()
@@ -44,10 +44,10 @@ module.exports = function (sodium) {
     var fixtures = require('./fixtures/crypto_kdf.json')
 
     for (var i = 0; i < fixtures.length; i++) {
-      var key = from(fixtures[i].key, 'hex')
+      var key = toBuffer(fixtures[i].key, 'hex')
       var subkeyLen = fixtures[i].subkey_len
       var id = fixtures[i].id
-      var context = from(fixtures[i].context, 'hex')
+      var context = toBuffer(fixtures[i].context, 'hex')
 
       var shouldError = fixtures[i].error
 
@@ -55,7 +55,7 @@ module.exports = function (sodium) {
 
       try {
         sodium.crypto_kdf_derive_from_key(actual, id, context, key)
-        var expected = from(fixtures[i].subkey, 'hex')
+        var expected = toBuffer(fixtures[i].subkey, 'hex')
         if (equals(actual, expected) === false) {
           assert.fail('Failed on fixture #' + i)
         }

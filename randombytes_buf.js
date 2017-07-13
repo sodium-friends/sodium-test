@@ -31,7 +31,7 @@ module.exports = function (sodium) {
       return (cnt / 256) | 0
     })
     .forEach(function (cnt) {
-      if (1 > cnt && cnt > 3) assert.fail('Statistically unreasonable')
+      if (cnt < 1 && cnt > 3) assert.fail('Statistically unreasonable')
     })
 
     assert.end()

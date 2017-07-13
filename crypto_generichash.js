@@ -1,10 +1,11 @@
 var tape = require('tape')
 var alloc = require('buffer-alloc')
 var fill = require('buffer-fill')
+var toBuffer = require('buffer-from')
 
 module.exports = function (sodium) {
   tape('crypto_generichash', function (t) {
-    var buf = new Buffer('Hello, World!')
+    var buf = toBuffer('Hello, World!')
 
     var out = alloc(sodium.crypto_generichash_BYTES)
     sodium.crypto_generichash(out, buf)
@@ -26,7 +27,7 @@ module.exports = function (sodium) {
   })
 
   tape('crypto_generichash with key', function (t) {
-    var buf = new Buffer('Hello, World!')
+    var buf = toBuffer('Hello, World!')
     var key = alloc(sodium.crypto_generichash_KEYBYTES)
 
     fill(key, 'lo')
@@ -52,7 +53,7 @@ module.exports = function (sodium) {
 
   tape('crypto_generichash_instance', function (t) {
     var isntance = sodium.crypto_generichash_instance()
-    var buf = new Buffer('Hej, Verden')
+    var buf = toBuffer('Hej, Verden')
 
     for (var i = 0; i < 10; i++) isntance.update(buf)
 
@@ -68,7 +69,7 @@ module.exports = function (sodium) {
     fill(key, 'lo')
 
     var isntance = sodium.crypto_generichash_instance(key)
-    var buf = new Buffer('Hej, Verden')
+    var buf = toBuffer('Hej, Verden')
 
     for (var i = 0; i < 10; i++) isntance.update(buf)
 
@@ -81,7 +82,7 @@ module.exports = function (sodium) {
 
   tape('crypto_generichash_instance with hash length', function (t) {
     var isntance = sodium.crypto_generichash_instance(null, sodium.crypto_generichash_BYTES_MIN)
-    var buf = new Buffer('Hej, Verden')
+    var buf = toBuffer('Hej, Verden')
 
     for (var i = 0; i < 10; i++) isntance.update(buf)
 
@@ -97,7 +98,7 @@ module.exports = function (sodium) {
     fill(key, 'lo')
 
     var isntance = sodium.crypto_generichash_instance(key, sodium.crypto_generichash_BYTES_MIN)
-    var buf = new Buffer('Hej, Verden')
+    var buf = toBuffer('Hej, Verden')
 
     for (var i = 0; i < 10; i++) isntance.update(buf)
 
@@ -109,7 +110,7 @@ module.exports = function (sodium) {
   })
 
   tape('crypto_generichash_batch', function (t) {
-    var buf = new Buffer('Hej, Verden')
+    var buf = toBuffer('Hej, Verden')
     var batch = []
     for (var i = 0; i < 10; i++) batch.push(buf)
 
@@ -124,7 +125,7 @@ module.exports = function (sodium) {
     var key = alloc(sodium.crypto_generichash_KEYBYTES)
     fill(key, 'lo')
 
-    var buf = new Buffer('Hej, Verden')
+    var buf = toBuffer('Hej, Verden')
     var batch = []
     for (var i = 0; i < 10; i++) batch.push(buf)
 

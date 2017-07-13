@@ -1,16 +1,16 @@
 var test = require('tape')
 var alloc = require('buffer-alloc')
 var equals = require('buffer-equals')
-var from = require('buffer-from')
+var toBuffer = require('buffer-from')
 
 module.exports = function (sodium) {
   test('crypto_sign_open fixtures', function (assert) {
     var fixtures = require('./fixtures/crypto_sign.json')
 
     for (var i = 0; i < fixtures.length; i++) {
-      var publicKey = from(fixtures[i][1])
-      var message = from(fixtures[i][3])
-      var signed = from([].concat(fixtures[i][2], fixtures[i][3]))
+      var publicKey = toBuffer(fixtures[i][1])
+      var message = toBuffer(fixtures[i][3])
+      var signed = toBuffer([].concat(fixtures[i][2], fixtures[i][3]))
 
       if (!sodium.crypto_sign_open(signed, message, publicKey)) {
         assert.fail('Failed on fixture #' + i)
@@ -26,11 +26,10 @@ module.exports = function (sodium) {
     var fixtures = require('./fixtures/crypto_sign.json')
 
     for (var i = 0; i < fixtures.length; i++) {
-      var secretKey = from([].concat(fixtures[i][0], fixtures[i][1]))
-      var publicKey = from(fixtures[i][1])
-      var message = from(fixtures[i][3])
+      var secretKey = toBuffer([].concat(fixtures[i][0], fixtures[i][1]))
+      var message = toBuffer(fixtures[i][3])
 
-      var expected = from([].concat(fixtures[i][2], fixtures[i][3]))
+      var expected = toBuffer([].concat(fixtures[i][2], fixtures[i][3]))
       var actual = alloc(sodium.crypto_sign_BYTES + message.length)
 
       sodium.crypto_sign(actual, message, secretKey)
@@ -49,9 +48,9 @@ module.exports = function (sodium) {
     var fixtures = require('./fixtures/crypto_sign.json')
 
     for (var i = 0; i < fixtures.length; i++) {
-      var publicKey = from(fixtures[i][1])
-      var message = from(fixtures[i][3])
-      var signature = from(fixtures[i][2])
+      var publicKey = toBuffer(fixtures[i][1])
+      var message = toBuffer(fixtures[i][3])
+      var signature = toBuffer(fixtures[i][2])
 
       if (!sodium.crypto_sign_verify_detached(signature, message, publicKey)) {
         assert.fail('Failed on fixture #' + i)
@@ -67,10 +66,10 @@ module.exports = function (sodium) {
     var fixtures = require('./fixtures/crypto_sign.json')
 
     for (var i = 0; i < fixtures.length; i++) {
-      var secretKey = from([].concat(fixtures[i][0], fixtures[i][1]))
-      var message = from(fixtures[i][3])
+      var secretKey = toBuffer([].concat(fixtures[i][0], fixtures[i][1]))
+      var message = toBuffer(fixtures[i][3])
 
-      var expected = from(fixtures[i][2])
+      var expected = toBuffer(fixtures[i][2])
       var actual = alloc(sodium.crypto_sign_BYTES)
 
       sodium.crypto_sign_detached(actual, message, secretKey)
