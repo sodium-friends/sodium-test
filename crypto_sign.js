@@ -12,7 +12,7 @@ module.exports = function (sodium) {
       var message = toBuffer(fixtures[i][3])
       var signed = toBuffer([].concat(fixtures[i][2], fixtures[i][3]))
 
-      if (!sodium.crypto_sign_open(signed, message, publicKey)) {
+      if (!sodium.crypto_sign_open(message, signed, publicKey)) {
         assert.fail('Failed on fixture #' + i)
         assert.end()
         return
@@ -22,6 +22,7 @@ module.exports = function (sodium) {
     assert.pass('Passed all fixtures')
     assert.end()
   })
+
   test('crypto_sign fixtures', function (assert) {
     var fixtures = require('./fixtures/crypto_sign.json')
 
@@ -44,6 +45,7 @@ module.exports = function (sodium) {
     assert.pass('Passed all fixtures')
     assert.end()
   })
+
   test('crypto_sign_verify_detached fixtures', function (assert) {
     var fixtures = require('./fixtures/crypto_sign.json')
 
@@ -62,6 +64,7 @@ module.exports = function (sodium) {
     assert.pass('Passed all fixtures')
     assert.end()
   })
+
   test('crypto_sign_detached fixtures', function (assert) {
     var fixtures = require('./fixtures/crypto_sign.json')
 
