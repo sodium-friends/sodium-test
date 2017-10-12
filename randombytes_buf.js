@@ -4,6 +4,17 @@ var equals = require('buffer-equals')
 var freq = require('buffer-byte-frequency')
 
 module.exports = function (sodium) {
+  test('Various test cases', function (assert) {
+    sodium.randombytes_buf(new Buffer(0))
+    sodium.randombytes_buf(new Uint8Array(16))
+
+    assert.throws(function () {
+      sodium.randombytes_buf([])
+    })
+
+    assert.end()
+  })
+
   test('Generates random bytes', function (assert) {
     var bufConst = alloc(64)
     sodium.randombytes_buf(bufConst)
