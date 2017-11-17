@@ -5,7 +5,7 @@ var freq = require('buffer-byte-frequency')
 
 module.exports = function (sodium) {
   test('Various test cases', function (assert) {
-    sodium.randombytes_buf(new Buffer(0))
+    sodium.randombytes_buf(alloc(0))
     sodium.randombytes_buf(new Uint8Array(16))
 
     assert.throws(function () {
