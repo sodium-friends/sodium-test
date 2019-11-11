@@ -7,4 +7,5 @@ module.exports = function (sodium) {
   require('./crypto_stream')(sodium)
   require('./crypto_secretbox')(sodium)
   require('./crypto_box')(sodium)
+  require('./crypto_aead_xchacha20poly1305')(sodium)
 }
