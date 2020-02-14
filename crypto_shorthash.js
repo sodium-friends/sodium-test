@@ -1,9 +1,6 @@
 var test = require('tape')
-var from = require('buffer-from')
-var equals = require('buffer-equals')
-var alloc = require('buffer-alloc')
 
-var vectors = [ // generated from https://github.com/jedisct1/siphash-js/blob/master/test/index.js
+var vectors = [ // generated Buffer.from https://github.com/jedisct1/siphash-js/blob/master/test/index.js
   ['aON1dHrq90SbG8Hx', 'v7LyiwuCrB7EgAibPve6Yg2gLmggxE6j7ocR37EudrH_P9XX2rQK', [147, 73, 50, 63, 71, 98, 203, 42]],
   ['YOT4AG5F7ONRW5na', '4Ks1pPO_2wGYR-gfJShqUO-FirA9c5cF4oKwvStp2Ix5hHUg2klPofVJ8TZoBdFfgTh8', [138, 27, 129, 27, 185, 163, 160, 153]],
   ['63UlqXfSckA3Dv8S', 'bMQudI8yVdDx5ScGQCMQy4K_QXYCq1w1eC', [6, 78, 44, 167, 186, 29, 113, 244]],
@@ -183,10 +180,10 @@ module.exports = function (sodium) {
   function run (assert) {
     for (var i = 0; i < vectors.length; i++) {
       var v = vectors[i]
-      var key = from(v[0])
-      var message = from(v[1])
-      var expected = from(v[2])
-      var out = alloc(sodium.crypto_shorthash_BYTES)
+      var key = Buffer.from(v[0])
+      var message = Buffer.from(v[1])
+      var expected = Buffer.from(v[2])
+      var out = Buffer.alloc(sodium.crypto_shorthash_BYTES)
 
       sodium.crypto_shorthash(out, message, key)
       if (equals(out, expected) === false) {
@@ -199,4 +196,8 @@ module.exports = function (sodium) {
     assert.pass('Passed all fixtures')
     assert.end()
   }
+}
+
+function equals (buf1, buf2) {
+  return Buffer.compare(buf1, buf2) === 0
 }

@@ -1,6 +1,5 @@
 var tape = require('tape')
 var alloc = require('buffer-alloc')
-var toBuffer = require('buffer-from')
 
 module.exports = function (sodium) {
   tape('crypto_box_keypair generate key-pair', function (t) {
@@ -29,7 +28,7 @@ module.exports = function (sodium) {
 
     sodium.crypto_box_keypair(pubKey, secret)
 
-    var msg = toBuffer('hello world')
+    var msg = Buffer.from('hello world')
     var cipher = alloc(sodium.crypto_box_SEALBYTES + msg.length)
     sodium.crypto_box_seal(cipher, msg, pubKey)
 
@@ -40,11 +39,11 @@ module.exports = function (sodium) {
   })
 
   tape('crypto_box_seal_open cross-decrypt', function (t) {
-    var pubKey = toBuffer(
+    var pubKey = Buffer.from(
       'e0bb844ae3f48bb04323c8dfe7c34cf86608db2e2112f927953060c80506287f', 'hex')
-    var secret = toBuffer(
+    var secret = Buffer.from(
       '036a9de1ecc9d152cf39fed1b3e15bf761ae39a299031adc011cc9809041abfa', 'hex')
-    var cipher = toBuffer(
+    var cipher = Buffer.from(
       '249912e916ad8bcf96a3f9b750da2703' +
       '2eccdf83b5cff0d6a59a8bbe0bcd5823' +
       '5de9fbca55bd5416c754e5e0e0fe2f0c' +
