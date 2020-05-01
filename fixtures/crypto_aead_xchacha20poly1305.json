@@ -1,0 +1,25 @@
+{
+  "KEYLEN": 32,
+  "MACLEN": 16,
+  "NONCELEN": 8,
+  "encrypt": [
+    {
+      "key": "39f87ae72ca826bca9c2fde37e93f2741db2804ded7bd6903d0bbaf0eca0a157",
+      "nonce": "bae25606e7da652c",
+      "ciphertext": "c2d6292848f75a68edbdc2bac19a9343f8a4",
+      "plaintext": "hi"
+    },
+    {
+      "key": "70cc71ee7c226c471c0435aa73cf3f7f9ce757479bf9ffc2e789e77bcfbd4188",
+      "nonce": "675575a04fdaad14",
+      "ciphertext": "92b7237f2b97e02027a05e1be6b2876807644448",
+      "plaintext": "cool"
+    },
+    {
+      "key": "d8f94ab68fc6dc1c71040f1b656ded9f428ab2b61e16a4b74c0082b25966de0c",
+      "nonce": "3888bd08b499ae64",
+      "ciphertext": "c5134b50283c565104b7f50944b059e677e2a034",
+      "plaintext": "what"
+    }
+  ]
+}
