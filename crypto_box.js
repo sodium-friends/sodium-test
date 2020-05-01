@@ -1,18 +1,17 @@
 var tape = require('tape')
-var alloc = require('buffer-alloc')
 
 module.exports = function (sodium) {
   tape('crypto_box_keypair generate key-pair', function (t) {
-    var pubKey = alloc(sodium.crypto_box_PUBLICKEYBYTES)
+    var pubKey = Buffer.alloc(sodium.crypto_box_PUBLICKEYBYTES)
     sodium.randombytes_buf(pubKey)
 
-    var secret = alloc(sodium.crypto_box_SECRETKEYBYTES)
+    var secret = Buffer.alloc(sodium.crypto_box_SECRETKEYBYTES)
     sodium.randombytes_buf(secret)
 
-    var pubKeyCopy = alloc(sodium.crypto_box_PUBLICKEYBYTES)
+    var pubKeyCopy = Buffer.alloc(sodium.crypto_box_PUBLICKEYBYTES)
     pubKey.copy(pubKeyCopy)
 
-    var secretCopy = alloc(sodium.crypto_box_SECRETKEYBYTES)
+    var secretCopy = Buffer.alloc(sodium.crypto_box_SECRETKEYBYTES)
     secret.copy(secretCopy)
 
     sodium.crypto_box_keypair(pubKey, secret)
@@ -23,16 +22,16 @@ module.exports = function (sodium) {
   })
 
   tape('crypto_box_seal/crypto_box_seal_open self-decrypt', function (t) {
-    var pubKey = alloc(sodium.crypto_box_PUBLICKEYBYTES)
-    var secret = alloc(sodium.crypto_box_SECRETKEYBYTES)
+    var pubKey = Buffer.alloc(sodium.crypto_box_PUBLICKEYBYTES)
+    var secret = Buffer.alloc(sodium.crypto_box_SECRETKEYBYTES)
 
     sodium.crypto_box_keypair(pubKey, secret)
 
     var msg = Buffer.from('hello world')
-    var cipher = alloc(sodium.crypto_box_SEALBYTES + msg.length)
+    var cipher = Buffer.alloc(sodium.crypto_box_SEALBYTES + msg.length)
     sodium.crypto_box_seal(cipher, msg, pubKey)
 
-    var out = alloc(cipher.length - sodium.crypto_box_SEALBYTES)
+    var out = Buffer.alloc(cipher.length - sodium.crypto_box_SEALBYTES)
     sodium.crypto_box_seal_open(out, cipher, pubKey, secret)
     t.same(out.toString(), msg.toString())
     t.end()
@@ -49,7 +48,7 @@ module.exports = function (sodium) {
       '5de9fbca55bd5416c754e5e0e0fe2f0c' +
       '4e50df0cb302f1c4378f80', 'hex')
 
-    var out = alloc(cipher.length - sodium.crypto_box_SEALBYTES)
+    var out = Buffer.alloc(cipher.length - sodium.crypto_box_SEALBYTES)
     sodium.crypto_box_seal_open(out, cipher, pubKey, secret)
     t.same(out.toString(), 'hello world')
     t.end()
