@@ -1,7 +1,4 @@
 var test = require('tape')
-var from = require('buffer-from')
-var equals = require('buffer-equals')
-var alloc = require('buffer-alloc')
 
 var vectors = [ // generated from https://github.com/jedisct1/siphash-js/blob/master/test/index.js
   ['aON1dHrq90SbG8Hx', 'v7LyiwuCrB7EgAibPve6Yg2gLmggxE6j7ocR37EudrH_P9XX2rQK', [147, 73, 50, 63, 71, 98, 203, 42]],
@@ -183,13 +180,13 @@ module.exports = function (sodium) {
   function run (assert) {
     for (var i = 0; i < vectors.length; i++) {
       var v = vectors[i]
-      var key = from(v[0])
-      var message = from(v[1])
-      var expected = from(v[2])
-      var out = alloc(sodium.crypto_shorthash_BYTES)
+      var key = Buffer.from(v[0])
+      var message = Buffer.from(v[1])
+      var expected = Buffer.from(v[2])
+      var out = Buffer.alloc(sodium.crypto_shorthash_BYTES)
 
       sodium.crypto_shorthash(out, message, key)
-      if (equals(out, expected) === false) {
+      if (Buffer.compare(out, expected) !== 0) {
         assert.fail('Failed on fixture #' + i)
         assert.end()
         return
