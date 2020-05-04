@@ -6,12 +6,12 @@ module.exports = function (sodium) {
     var nonce = random(sodium.crypto_stream_NONCEBYTES)
     var key = random(sodium.crypto_stream_KEYBYTES)
 
-    sodium.crypto_stream(buf, nonce, key)
+    sodium.crypto_stream(buf, 0, 0, nonce, key)
 
     t.notEquals(buf, Buffer.alloc(50), 'contains noise now')
     var copy = Buffer.from(buf.toString('hex'), 'hex')
 
-    sodium.crypto_stream(buf, nonce, key)
+    sodium.crypto_stream(buf, 0, 0, nonce, key)
     t.same(buf, copy, 'predictable from nonce, key')
 
     t.end()
@@ -22,11 +22,11 @@ module.exports = function (sodium) {
     var nonce = random(sodium.crypto_stream_NONCEBYTES)
     var key = random(sodium.crypto_stream_KEYBYTES)
 
-    sodium.crypto_stream_xor(message, message, nonce, key)
+    sodium.crypto_stream_xor(message, 0, message, 0, 0, nonce, key)
 
     t.notEquals(message, Buffer.from('Hello, World!'), 'encrypted')
 
-    sodium.crypto_stream_xor(message, message, nonce, key)
+    sodium.crypto_stream_xor(message, 0, message, 0, 0, nonce, key)
 
     t.same(message, Buffer.from('Hello, World!'), 'decrypted')
 
@@ -46,7 +46,7 @@ module.exports = function (sodium) {
       inst.update(out.slice(i), message.slice(i, i + 1))
     }
 
-    sodium.crypto_stream_xor(out, out, nonce, key)
+    sodium.crypto_stream_xor(out, 0, out, 0, 0, nonce, key)
     t.same(out, message, 'decrypted')
     t.end()
   })
@@ -67,7 +67,7 @@ module.exports = function (sodium) {
       inst.update(Buffer.alloc(0), Buffer.alloc(0))
     }
 
-    sodium.crypto_stream_xor(out, out, nonce, key)
+    sodium.crypto_stream_xor(out, 0, out, 0, 0, nonce, key)
     t.same(out, message, 'decrypted')
     t.end()
   })
@@ -96,7 +96,7 @@ module.exports = function (sodium) {
     }
 
     var enc2 = Buffer.alloc(1000 * 61)
-    sodium.crypto_stream_xor(enc2, Buffer.concat(plain), nonce, key)
+    sodium.crypto_stream_xor(enc2, 0, Buffer.concat(plain), 0, 0, nonce, key)
 
     t.same(Buffer.concat(encrypted), enc2, 'same as encrypting all at once')
     t.same(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
@@ -128,7 +128,7 @@ module.exports = function (sodium) {
     }
 
     var enc2 = Buffer.alloc(Buffer.concat(plain).length)
-    sodium.crypto_stream_xor(enc2, Buffer.concat(plain), nonce, key)
+    sodium.crypto_stream_xor(enc2, 0, Buffer.concat(plain), 0, 0, nonce, key)
 
     t.same(Buffer.concat(encrypted), enc2, 'same as encrypting all at once')
     t.same(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
@@ -163,7 +163,7 @@ module.exports = function (sodium) {
     }
 
     var enc2 = Buffer.alloc(Buffer.concat(plain).length)
-    sodium.crypto_stream_xor(enc2, Buffer.concat(plain), nonce, key)
+    sodium.crypto_stream_xor(enc2, 0, Buffer.concat(plain), 0, 0, nonce, key)
 
     t.same(Buffer.concat(encrypted), enc2, 'same as encrypting all at once')
     t.same(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')

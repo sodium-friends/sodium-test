@@ -174,6 +174,7 @@ module.exports = function (sodium) {
     }
 
     assert.ok(sodium.crypto_shorthash_WASM_LOADED)
+
     run(assert)
   })
 
