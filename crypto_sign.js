@@ -32,7 +32,7 @@ module.exports = function (sodium) {
 
       sodium.crypto_sign(actual, message, secretKey)
 
-      if (equals(actual, expected) === false) {
+      if (Buffer.compare(actual, expected) !== 0) {
         assert.fail('Failed on fixture #' + i)
         assert.end()
         return
@@ -74,7 +74,7 @@ module.exports = function (sodium) {
 
       sodium.crypto_sign_detached(actual, message, secretKey)
 
-      if (equals(actual, expected) === false) {
+      if (Buffer.compare(actual, expected) !== 0) {
         assert.fail('Failed on fixture #' + i)
         assert.end()
         return
@@ -84,8 +84,4 @@ module.exports = function (sodium) {
     assert.pass('Passed all fixtures')
     assert.end()
   })
-}
-
-function equals (buf1, buf2) {
-  return Buffer.compare(buf1, buf2) === 0
 }

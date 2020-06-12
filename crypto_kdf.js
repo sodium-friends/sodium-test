@@ -2,7 +2,8 @@ var tape = require('tape')
 
 module.exports = function (sodium) {
   tape('crypto_kdf_keygen', function (t) {
-    var key = Buffer.alloc(sodium.crypto_kdf_KEYBYTES)
+    var key = Buffer.alloc(sodium.crypto_kdf_KEYBYTES + 1)
+    key[sodium.crypto_kdf_KEYBYTES] = 0xdb
 
     t.throws(function () {
       sodium.crypto_kdf_keygen(Buffer.alloc(1))
@@ -11,6 +12,7 @@ module.exports = function (sodium) {
     sodium.crypto_kdf_keygen(key)
 
     t.notEqual(key, Buffer.alloc(key.length))
+    t.equal(key[sodium.crypto_kdf_KEYBYTES], 0xdb)
     t.end()
   })
 
@@ -51,7 +53,7 @@ module.exports = function (sodium) {
       try {
         sodium.crypto_kdf_derive_from_key(actual, id, context, key)
         var expected = Buffer.from(fixtures[i].subkey, 'hex')
-        if (equals(actual, expected) === false) {
+        if (Buffer.compare(actual, expected) !== 0) {
           assert.fail('Failed on fixture #' + i)
         }
       } catch (ex) {
@@ -71,8 +73,4 @@ module.exports = function (sodium) {
     t.ok(sodium.crypto_kdf_KEYBYTES >= 16)
     t.end()
   })
-}
-
-function equals (buf1, buf2) {
-  return Buffer.compare(buf1, buf2) === 0
 }
