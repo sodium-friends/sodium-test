@@ -109,9 +109,11 @@ module.exports = function (sodium) {
 
     for (i = 0; i < c.length; i++) {
       c[i] ^= (i + 1)
-      if (sodium.crypto_aead_chacha20poly1305_ietf_decrypt(m2, null, c, ad, nonce, firstkey) === 0 ||
-        Buffer.compare(m, m2.subarray(0, m.length)) === 0) {
-        t.fail('message can be forged')
+      try {
+        sodium.crypto_aead_chacha20poly1305_ietf_decrypt(m2, null, c, ad, nonce, firstkey)
+        t.fail()
+      } catch (e) {
+        if (Buffer.compare(m, m2.subarray(0, m.length)) === 0) t.fail('message can be forged')
       }
       c[i] ^= (i + 1)
     }
