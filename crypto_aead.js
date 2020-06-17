@@ -1,21 +1,21 @@
 const tape = require('tape')
 
-const m = Buffer.from("Ladies and Gentlemen of the class of '99: If I could offer you only one tip for the future, sunscreen would be it.")
+const m = new Uint8Array(Buffer.from("Ladies and Gentlemen of the class of '99: If I could offer you only one tip for the future, sunscreen would be it."))
 
-const firstkey = Buffer.from([
+const firstkey = new Uint8Array([
   0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87,
   0x88, 0x89, 0x8a, 0x8b, 0x8c, 0x8d, 0x8e, 0x8f,
   0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97,
   0x98, 0x99, 0x9a, 0x9b, 0x9c, 0x9d, 0x9e, 0x9f
 ])
 
-const nonce = Buffer.from([
+const nonce = new Uint8Array([
   0x07, 0x00, 0x00, 0x00, 0x40, 0x41, 0x42, 0x43,
   0x44, 0x45, 0x46, 0x47
 ])
 
 const exp = [
-  Buffer.from([
+  new Uint8Array([
     0xd3, 0x1a, 0x8d, 0x34, 0x64, 0x8e, 0x60, 0xdb,
     0x7b, 0x86, 0xaf, 0xbc, 0x53, 0xef, 0x7e, 0xc2,
     0xa4, 0xad, 0xed, 0x51, 0x29, 0x6e, 0x08, 0xfe,
@@ -33,7 +33,7 @@ const exp = [
     0x61, 0x16, 0x1a, 0xe1, 0x0b, 0x59, 0x4f, 0x09,
     0xe2, 0x6a, 0x7e, 0x90, 0x2e, 0xcb, 0xd0, 0x60,
     0x06, 0x91]),
-  Buffer.from([
+  new Uint8Array([
     0xd3, 0x1a, 0x8d, 0x34, 0x64, 0x8e, 0x60, 0xdb,
     0x7b, 0x86, 0xaf, 0xbc, 0x53, 0xef, 0x7e, 0xc2,
     0xa4, 0xad, 0xed, 0x51, 0x29, 0x6e, 0x08, 0xfe,
@@ -51,7 +51,7 @@ const exp = [
     0x61, 0x16, 0x6a, 0x23, 0xa4, 0x68, 0x1f, 0xd5,
     0x94, 0x56, 0xae, 0xa1, 0xd2, 0x9f, 0x82, 0x47,
     0x72, 0x16]),
-  Buffer.from([
+  new Uint8Array([
     0xd3, 0x1a, 0x8d, 0x34, 0x64, 0x8e, 0x60, 0xdb,
     0x7b, 0x86, 0xaf, 0xbc, 0x53, 0xef, 0x7e, 0xc2,
     0xa4, 0xad, 0xed, 0x51, 0x29, 0x6e, 0x08, 0xfe,
@@ -73,18 +73,18 @@ const exp = [
 
 module.exports = function (sodium) {
   tape('crypto_aead_chacha20poly1305_ietf', function (t) {
-    const ad = Buffer.from([ 0x50, 0x51, 0x52, 0x53, 0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7 ])
-    const c = Buffer.alloc(m.length + sodium.crypto_aead_chacha20poly1305_ietf_ABYTES)
-    const detached_c = Buffer.alloc(m.length)
-    const mac = Buffer.alloc(sodium.crypto_aead_chacha20poly1305_ietf_ABYTES)
-    const m2 = Buffer.alloc(m.length)
+    const ad = new Uint8Array([ 0x50, 0x51, 0x52, 0x53, 0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7 ])
+    const c = new Uint8Array(m.byteLength + sodium.crypto_aead_chacha20poly1305_ietf_ABYTES)
+    const detached_c = new Uint8Array(m.byteLength)
+    const mac = new Uint8Array(sodium.crypto_aead_chacha20poly1305_ietf_ABYTES)
+    const m2 = new Uint8Array(m.byteLength)
     let found_clen
     let found_maclen
     let m2len
     let i
 
     found_clen = sodium.crypto_aead_chacha20poly1305_ietf_encrypt(c, m, ad, null, nonce, firstkey)
-    t.equal(found_clen, m.length + sodium.crypto_aead_chacha20poly1305_ietf_ABYTES, 'found_clen is properly set')
+    t.equal(found_clen, m.byteLength + sodium.crypto_aead_chacha20poly1305_ietf_ABYTES, 'found_clen is properly set')
     t.same(c, exp[0], 'ciphertext matches expected result')
 
     found_clen = sodium.crypto_aead_chacha20poly1305_ietf_encrypt_detached(detached_c,
@@ -93,12 +93,12 @@ module.exports = function (sodium) {
                                                        ad,
                                                        null, nonce, firstkey)
 
-    t.same(detached_c, c.subarray(0, m.length), 'detached ciphertext passes')
-    t.same(mac, c.subarray(m.length), 'detached mac passes')
+    t.same(detached_c, c.subarray(0, m.byteLength), 'detached ciphertext passes')
+    t.same(mac, c.subarray(m.byteLength), 'detached mac passes')
     m2len = sodium.crypto_aead_chacha20poly1305_ietf_decrypt(m2, null, c, ad, nonce, firstkey)
 
     t.assert(m2len >= 0, 'sodium.crypto_aead_chacha20poly1305_ietf_decrypt() succeeded')
-    t.equal(m2len, m.length, 'm2len is properly set')
+    t.equal(m2len, m.byteLength, 'm2len is properly set')
     t.same(m2, m, 'm == m2')
     m2.fill(0)
 
@@ -107,44 +107,44 @@ module.exports = function (sodium) {
 
     t.same(m, m2, 'detached m == m2')
 
-    for (i = 0; i < c.length; i++) {
+    for (i = 0; i < c.byteLength; i++) {
       c[i] ^= (i + 1)
       try {
         sodium.crypto_aead_chacha20poly1305_ietf_decrypt(m2, null, c, ad, nonce, firstkey)
         t.fail()
       } catch (e) {
-        if (Buffer.compare(m, m2.subarray(0, m.length)) === 0) t.fail('message can be forged')
+        if (Buffer.compare(m, m2.subarray(0, m.byteLength)) === 0) t.fail('message can be forged')
       }
       c[i] ^= (i + 1)
     }
 
-    found_clen = sodium.crypto_aead_chacha20poly1305_ietf_encrypt(c, m, Buffer.alloc(0), null, nonce, firstkey)
-    t.equal(found_clen, c.length, 'clen is properly set (adlen=0)')
+    found_clen = sodium.crypto_aead_chacha20poly1305_ietf_encrypt(c, m, new Uint8Array(0), null, nonce, firstkey)
+    t.equal(found_clen, c.byteLength, 'clen is properly set (adlen=0)')
     t.same(c, exp[1], 'ciphertext matches expected result')
 
-    m2len = sodium.crypto_aead_chacha20poly1305_ietf_decrypt(m2, null, c, Buffer.alloc(0), nonce, firstkey)
+    m2len = sodium.crypto_aead_chacha20poly1305_ietf_decrypt(m2, null, c, new Uint8Array(0), nonce, firstkey)
 
     t.assert(m2len >= 0, 'sodium.crypto_aead_chacha20poly1305_ietf_decrypt() passed (adlen=0)')
-    t.equal(m2len, m.length, 'm2len is properly set (adlen=0)\n')
+    t.equal(m2len, m.byteLength, 'm2len is properly set (adlen=0)\n')
 
-    t.ok(Buffer.compare(m, m2.subarray(0, m.length)) === 0, 'm == m2 (adlen=0)')
+    t.ok(Buffer.compare(m, m2.subarray(0, m.byteLength)) === 0, 'm == m2 (adlen=0)')
 
-    t.throws(() => sodium.crypto_aead_chacha20poly1305_ietf_decrypt(m2, null, Buffer.alloc(0), Buffer.alloc(0), nonce, firstkey),
+    t.throws(() => sodium.crypto_aead_chacha20poly1305_ietf_decrypt(m2, null, new Uint8Array(0), new Uint8Array(0), nonce, firstkey),
       "sodium.crypto_aead_chacha20poly1305_ietf_decrypt() shouldn't work with an empty ciphertext")
 
-    m.copy(c, 0, 0, m.length)
-    found_clen = sodium.crypto_aead_chacha20poly1305_ietf_encrypt(c, c.subarray(0, m.length), Buffer.alloc(0), null, nonce, firstkey)
+    c.set(m)
+    found_clen = sodium.crypto_aead_chacha20poly1305_ietf_encrypt(c, c.subarray(0, m.byteLength), new Uint8Array(0), null, nonce, firstkey)
 
-    t.equal(found_clen, c.length, 'clen is properly set (adlen=0)')
+    t.equal(found_clen, c.byteLength, 'clen is properly set (adlen=0)')
     t.same(c, exp[2], 'ciphertext matches expected result')
 
-    m2len = sodium.crypto_aead_chacha20poly1305_ietf_decrypt(c.subarray(0, m.length),
-                                                             null, c, Buffer.alloc(0), nonce, firstkey)
+    m2len = sodium.crypto_aead_chacha20poly1305_ietf_decrypt(c.subarray(0, m.byteLength),
+                                                             null, c, new Uint8Array(0), nonce, firstkey)
 
     t.assert(m2len >= 0, 'sodium.crypto_aead_chacha20poly1305_ietf_decrypt() passed (adlen=0)')
-    t.equal(m2len, m.length, 'm2len is properly set (adlen=0)')
+    t.equal(m2len, m.byteLength, 'm2len is properly set (adlen=0)')
 
-    t.ok(Buffer.compare(m, c.subarray(0, m.length)) === 0, 'm == c (adlen=0)\n')
+    t.ok(Buffer.compare(m, c.subarray(0, m.byteLength)) === 0, 'm == c (adlen=0)\n')
 
     t.assert(sodium.crypto_aead_chacha20poly1305_ietf_KEYBYTES > 0)
     t.equal(sodium.crypto_aead_chacha20poly1305_ietf_KEYBYTES, 32)
