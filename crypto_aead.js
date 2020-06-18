@@ -102,8 +102,8 @@ module.exports = function (sodium) {
     t.same(m2, m, 'm == m2')
     m2.fill(0)
 
-    t.equal(sodium.crypto_aead_chacha20poly1305_ietf_decrypt_detached(m2, null, detached_c, mac, ad, nonce, firstkey),
-      0, 'sodium.crypto_aead_chacha20poly1305_ietf_decrypt_detached() succeeded')
+    t.doesNotThrow(() => sodium.crypto_aead_chacha20poly1305_ietf_decrypt_detached(m2, null, detached_c, mac, ad, nonce, firstkey),
+        'sodium.crypto_aead_chacha20poly1305_ietf_decrypt_detached() succeeded')
 
     t.same(m, m2, 'detached m == m2')
 
