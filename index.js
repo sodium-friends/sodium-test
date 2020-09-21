@@ -9,4 +9,5 @@ module.exports = function (sodium) {
   require('./crypto_stream')(sodium)
   require('./crypto_secretbox')(sodium)
   require('./crypto_aead')(sodium)
+  require('./crypto_auth')(sodium)
 }
