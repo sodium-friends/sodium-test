@@ -63,7 +63,7 @@ module.exports = function (sodium) {
     t.deepEqual(a, expected)
     t.ok(sodium.crypto_auth_verify(a, c, key))
 
-    c[Math.round(Math.random() * a.length)] += 1
+    c[Math.floor(Math.random() * c.length)] += 1
     t.notOk(sodium.crypto_auth_verify(a, c, key))
 
     t.end()
