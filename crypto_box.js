@@ -89,8 +89,6 @@ module.exports = function (sodium) {
   })
 
   tape('crypto_box_easy', (t) => {
-    // Based on: test/default/box_easy.c from libsodium.
-
     const alicesk = new Uint8Array([
       0x77, 0x07, 0x6d, 0x0a, 0x73, 0x18, 0xa5, 0x7d, 0x3c, 0x16, 0xc1, 0x72,
       0x51, 0xb2, 0x66, 0x45, 0xdf, 0x4c, 0x2f, 0x87, 0xeb, 0xc0, 0x99, 0x2a,
@@ -119,13 +117,10 @@ module.exports = function (sodium) {
       0xe0, 0x82, 0xf9, 0x37, 0x76, 0x38, 0x48, 0x64, 0x5e, 0x07, 0x05
     ])
 
-    // XXX: This diverges from the upstream test. The upstream libsodium test
-    // gives this array a length of `147 + crypto_box_MACBYTES`, which throws
-    // an error when passed to libsodium.
     const c = new Uint8Array(147)
     sodium.crypto_box_easy(c, m, nonce, bobpk, alicesk)
 
-    const expected1 = [
+    const expected1 = new Uint8Array([
       0xf3, 0xff, 0xc7, 0x70, 0x3f, 0x94, 0x00, 0xe5, 0x2a, 0x7d, 0xfb, 0x4b,
       0x3d, 0x33, 0x05, 0xd9, 0x8e, 0x99, 0x3b, 0x9f, 0x48, 0x68, 0x12, 0x73,
       0xc2, 0x96, 0x50, 0xba, 0x32, 0xfc, 0x76, 0xce, 0x48, 0x33, 0x2e, 0xa7,
@@ -139,47 +134,91 @@ module.exports = function (sodium) {
       0x56, 0x24, 0x4a, 0x9e, 0x88, 0xd5, 0xf9, 0xb3, 0x79, 0x73, 0xf6, 0x22,
       0xa4, 0x3d, 0x14, 0xa6, 0x59, 0x9b, 0x1f, 0x65, 0x4c, 0xb4, 0x5a, 0x74,
       0xe3, 0x55, 0xa5
-    ]
-    const actual1 = c.subarray(0, 131 + sodium.crypto_box_MACBYTES)
-    t.deepEqual(actual1, expected1, '1')
+    ])
+
+    t.deepEqual(c, expected1, 'encrypts correctly')
 
     // This test isn't found upstream, but it seems necessary to have at least
     // one crypto_box_open_easy() working since the next test diverges.
     const o = new Uint8Array(131)
-    t.ok(sodium.crypto_box_open_easy(o, actual1, nonce, bobpk, alicesk))
-    t.deepEqual(o, m)
+    t.ok(sodium.crypto_box_open_easy(o, expected1, nonce, bobpk, alicesk))
+    t.deepEqual(o, m, 'decrypts correctly')
 
     const guardPage = new Uint8Array(0)
-    sodium.crypto_box_easy(
+
+    t.ok(sodium.crypto_box_easy(
       c.subarray(0, sodium.crypto_box_MACBYTES),
       guardPage,
       nonce,
       bobpk,
       alicesk
-    )
-    const expected2 = [
+    ))
+
+    const expected2 = new Uint8Array([
       0x25, 0x39, 0x12, 0x1d, 0x8e, 0x23, 0x4e, 0x65, 0x2d, 0x65, 0x1f, 0xa4,
       0xc8, 0xcf, 0xf8, 0x80, 0x8e
-    ]
+    ])
+
     t.deepEqual(c.subarray(0, expected2.length), expected2)
 
-    // XXX: This diverges from the upstream test. The upstream libsodium test
-    // requires that this passes (returns 0), but sodium-native fails here.
-    //
-    // See: https://github.com/jedisct1/libsodium/blob/33b935921c91eb7832296a6387d3f8dfbfa7e385/test/default/box_easy.c#L51-L66
-    sodium.crypto_box_open_easy(
-      c.subarray(0, 1),
-      new Uint8Array(expected2),
+    t.ok(sodium.crypto_box_open_easy(
+      new Uint8Array(0),
+      c.subarray(0, sodium.crypto_box_MACBYTES),
       nonce,
       bobpk,
       alicesk
-    )
+    ))
 
-    t.deepEqual(c.subarray(0, expected2.length), expected2)
+    c[Math.floor(Math.random() * sodium.crypto_box_MACBYTES)] += 1
 
-    c[Math.round(Math.random() * sodium.crypto_box_MACBYTES)] += 1
+    t.notOk(sodium.crypto_box_open_easy(new Uint8Array(0), c.subarray(0, sodium.crypto_box_MACBYTES), nonce, bobpk, alicesk))
 
-    t.notOk(sodium.crypto_box_open_easy(c.subarray(0, 1), new Uint8Array(expected2), nonce, bobpk, alicesk))
+    t.end()
+  })
+
+  tape('crypto_box2', t => {
+    const small_order_p = new Uint8Array([
+      0xe0, 0xeb, 0x7a, 0x7c, 0x3b, 0x41, 0xb8, 0xae, 0x16, 0x56, 0xe3,
+      0xfa, 0xf1, 0x9f, 0xc4, 0x6a, 0xda, 0x09, 0x8d, 0xeb, 0x9c, 0x32,
+      0xb1, 0xfd, 0x86, 0x62, 0x05, 0x16, 0x5f, 0x49, 0xb8, 0x00
+    ])
+
+    const alicepk = new Uint8Array(sodium.crypto_box_PUBLICKEYBYTES)
+    const alicesk = new Uint8Array(sodium.crypto_box_SECRETKEYBYTES)
+    const bobpk = new Uint8Array(sodium.crypto_box_PUBLICKEYBYTES)
+    const bobsk = new Uint8Array(sodium.crypto_box_SECRETKEYBYTES)
+    const mac = new Uint8Array(sodium.crypto_box_MACBYTES)
+    const nonce = new Uint8Array(sodium.crypto_box_NONCEBYTES)
+    const m_size = 7 + Math.floor(Math.random() * 1000)
+    const m = new Uint8Array(m_size)
+    const m2 = new Uint8Array(m_size)
+    const c = new Uint8Array(sodium.crypto_box_MACBYTES + m_size)
+
+    sodium.crypto_box_keypair(alicepk, alicesk)
+    sodium.crypto_box_keypair(bobpk, bobsk)
+
+    const mlen = Math.floor(Math.random() * m_size) + 1
+    sodium.randombytes_buf(m, mlen)
+    sodium.randombytes_buf(nonce, sodium.crypto_box_NONCEBYTES)
+
+    t.ok(sodium.crypto_box_easy(c, m.subarray(0, mlen), nonce, bobpk, alicesk))
+
+    t.ok(sodium.crypto_box_open_easy(m2.subarray(0, mlen), c.subarray(0, mlen + sodium.crypto_box_MACBYTES), nonce, alicepk, bobsk))
+    t.deepEqual(m.subarray(0, mlen), m2.subarray(0, mlen))
+
+    for (let i = sodium.crypto_box_MACBYTES; i < mlen + sodium.crypto_box_MACBYTES - 1; i++) {
+      if (sodium.crypto_box_open_easy(m2.subarray(0, i - sodium.crypto_box_MACBYTES), c, nonce, alicepk, bobsk)) {
+        t.fail('short open() should fail.')
+      }
+    }
+
+    c.set(m.subarray(0, mlen))
+    t.assert(sodium.crypto_box_easy(c.subarray(0, mlen + sodium.crypto_box_MACBYTES), c.subarray(0, mlen), nonce, bobpk, alicesk))
+
+    t.notDeepEqual(m.subarray(0, mlen), c.subarray(0, mlen))
+    t.notDeepEqual(m.subarray(0, mlen), c.subarray(sodium.crypto_box_MACBYTES, sodium.crypto_box_MACBYTES + mlen))
+
+    t.assert(sodium.crypto_box_open_easy(c.subarray(0, mlen), c.subarray(0, mlen + sodium.crypto_box_MACBYTES), nonce, alicepk, bobsk))
 
     t.end()
   })
