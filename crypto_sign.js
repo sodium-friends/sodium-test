@@ -103,7 +103,7 @@ module.exports = function (sodium) {
       skpk.set(test.sk)
       skpk.set(test.pk, sodium.crypto_sign_SEEDBYTES)
 
-      smlen = sodium.crypto_sign(sm, test.m, skpk)
+      smlen = sodium.crypto_sign(sm.subarray(0, test.m.byteLength + sodium.crypto_sign_BYTES), test.m, skpk)
       pass &= smlen === sodium.crypto_sign_BYTES + test.m.byteLength
       pass &= Buffer.compare(test.sig, sm.subarray(0, 64)) === 0
       pass &= sodium.crypto_sign_open(test.m, sm.subarray(0, smlen), test.pk)
@@ -150,8 +150,8 @@ module.exports = function (sodium) {
       0xfa, 0xbe, 0x4d, 0x14, 0x51, 0xa5, 0x59, 0xfa, 0xed, 0xee
     ])
 
-    assert.equal(sodium.crypto_sign_seed_keypair(pk, sk, keypair_seed), 0)
-    assert.equal(sodium.crypto_sign_keypair(pk, sk), 0)
+    assert.doesNotThrow(() => sodium.crypto_sign_seed_keypair(pk, sk, keypair_seed))
+    assert.doesNotThrow(() => sodium.crypto_sign_keypair(pk, sk))
 
     assert.assert(sodium.crypto_sign_BYTES > 0)
     assert.assert(sodium.crypto_sign_SEEDBYTES > 0)
