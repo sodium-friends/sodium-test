@@ -72,7 +72,7 @@ const exp = [
 ]
 
 module.exports = function (sodium) {
-  tape('crypto_aead_chacha20poly1305_ietf', function (t) {
+  tape.only('crypto_aead_chacha20poly1305_ietf', function (t) {
     const ad = new Uint8Array([ 0x50, 0x51, 0x52, 0x53, 0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7 ])
     const c = new Uint8Array(m.byteLength + sodium.crypto_aead_chacha20poly1305_ietf_ABYTES)
     const detached_c = new Uint8Array(m.byteLength)
@@ -145,6 +145,19 @@ module.exports = function (sodium) {
     t.equal(m2len, m.byteLength, 'm2len is properly set (adlen=0)')
 
     t.ok(Buffer.compare(m, c.subarray(0, m.byteLength)) === 0, 'm == c (adlen=0)\n')
+
+    const c2 = new Uint8Array(c)
+    const mac2 = new Uint8Array(mac)
+    sodium.crypto_aead_chacha20poly1305_ietf_encrypt_detached(c, mac, c, new Uint8Array(0), null, nonce, firstkey)
+    sodium.crypto_aead_chacha20poly1305_ietf_encrypt_detached(c2, mac2, c2, null, null, nonce, firstkey)
+
+    t.deepEqual(c, c2, 'null ad gives correct ciphertext')
+    t.deepEqual(mac, mac2, 'null ad gives correct mac')
+
+    sodium.crypto_aead_chacha20poly1305_ietf_decrypt_detached(c, null, c, mac, new Uint8Array(0), nonce, firstkey)
+    sodium.crypto_aead_chacha20poly1305_ietf_decrypt_detached(c2, null, c2, mac, null, nonce, firstkey)
+
+    t.deepEqual(c, c2, 'null ad gives correct plaintext')
 
     t.assert(sodium.crypto_aead_chacha20poly1305_ietf_KEYBYTES > 0)
     t.equal(sodium.crypto_aead_chacha20poly1305_ietf_KEYBYTES, 32)
