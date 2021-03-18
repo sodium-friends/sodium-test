@@ -72,7 +72,7 @@ const exp = [
 ]
 
 module.exports = function (sodium) {
-  tape.only('crypto_aead_chacha20poly1305_ietf', function (t) {
+  tape('crypto_aead_chacha20poly1305_ietf', function (t) {
     const ad = new Uint8Array([ 0x50, 0x51, 0x52, 0x53, 0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7 ])
     const c = new Uint8Array(m.byteLength + sodium.crypto_aead_chacha20poly1305_ietf_ABYTES)
     const detached_c = new Uint8Array(m.byteLength)
@@ -168,4 +168,6 @@ module.exports = function (sodium) {
 
     t.end()
   })
+
+  require('./crypto_aead_xchacha20poly1305')(sodium)
 }

@@ -9,7 +9,7 @@ module.exports = function (sodium) {
       sodium.crypto_kdf_keygen(Buffer.alloc(1))
     })
 
-    sodium.crypto_kdf_keygen(key)
+    sodium.crypto_kdf_keygen(key.subarray(0, sodium.crypto_kdf_KEYBYTES))
 
     t.notEqual(key, Buffer.alloc(key.length))
     t.equal(key[sodium.crypto_kdf_KEYBYTES], 0xdb)

@@ -146,7 +146,7 @@ module.exports = function (sodium) {
 
     const guardPage = new Uint8Array(0)
 
-    t.ok(sodium.crypto_box_easy(
+    t.doesNotThrow(() => sodium.crypto_box_easy(
       c.subarray(0, sodium.crypto_box_MACBYTES),
       guardPage,
       nonce,
@@ -198,22 +198,22 @@ module.exports = function (sodium) {
     sodium.crypto_box_keypair(bobpk, bobsk)
 
     const mlen = Math.floor(Math.random() * m_size) + 1
-    sodium.randombytes_buf(m, mlen)
-    sodium.randombytes_buf(nonce, sodium.crypto_box_NONCEBYTES)
+    sodium.randombytes_buf(m.subarray(0, mlen))
+    sodium.randombytes_buf(nonce.subarray(0, sodium.crypto_box_NONCEBYTES))
 
-    t.ok(sodium.crypto_box_easy(c, m.subarray(0, mlen), nonce, bobpk, alicesk))
+    t.doesNotThrow(() => sodium.crypto_box_easy(c.subarray(0, mlen + sodium.crypto_box_MACBYTES), m.subarray(0, mlen), nonce, bobpk, alicesk))
 
     t.ok(sodium.crypto_box_open_easy(m2.subarray(0, mlen), c.subarray(0, mlen + sodium.crypto_box_MACBYTES), nonce, alicepk, bobsk))
     t.deepEqual(m.subarray(0, mlen), m2.subarray(0, mlen))
 
     for (let i = sodium.crypto_box_MACBYTES; i < mlen + sodium.crypto_box_MACBYTES - 1; i++) {
-      if (sodium.crypto_box_open_easy(m2.subarray(0, i - sodium.crypto_box_MACBYTES), c, nonce, alicepk, bobsk)) {
+      if (sodium.crypto_box_open_easy(m2.subarray(0, i - sodium.crypto_box_MACBYTES), c.subarray(0, i), nonce, alicepk, bobsk)) {
         t.fail('short open() should fail.')
       }
     }
 
     c.set(m.subarray(0, mlen))
-    t.assert(sodium.crypto_box_easy(c.subarray(0, mlen + sodium.crypto_box_MACBYTES), c.subarray(0, mlen), nonce, bobpk, alicesk))
+    t.doesNotThrow(() => sodium.crypto_box_easy(c.subarray(0, mlen + sodium.crypto_box_MACBYTES), c.subarray(0, mlen), nonce, bobpk, alicesk))
 
     t.notDeepEqual(m.subarray(0, mlen), c.subarray(0, mlen))
     t.notDeepEqual(m.subarray(0, mlen), c.subarray(sodium.crypto_box_MACBYTES, sodium.crypto_box_MACBYTES + mlen))
