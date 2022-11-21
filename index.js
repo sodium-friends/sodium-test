@@ -1,5 +1,6 @@
 module.exports = function (sodium) {
   require('./randombytes_buf')(sodium)
+  require('./crypto_core')(sodium)
   require('./crypto_sign')(sodium)
   require('./crypto_box')(sodium)
   require('./crypto_kx')(sodium)
