@@ -61,7 +61,7 @@ const exp = [
 ]
 
 module.exports = function (sodium) {
-  test.skip('crypto_aead_xchacha20poly1305_ietf', t => {
+  test('crypto_aead_xchacha20poly1305_ietf', t => {
     const MLEN = 114
     const CLEN = (MLEN + sodium.crypto_aead_xchacha20poly1305_ietf_ABYTES)
     const firstkey = new Uint8Array([

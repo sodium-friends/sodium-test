@@ -10,7 +10,7 @@ module.exports = function (sodium) {
   const NONCE_OFFSET = sodium.crypto_secretstream_xchacha20poly1305_KEYBYTES
   const PAD_OFFSET = NONCE_OFFSET + 12
 
-  test.skip('crypto_secretstream', (t) => {
+  test('crypto_secretstream', (t) => {
     const state = new Uint8Array(sodium.crypto_secretstream_xchacha20poly1305_STATEBYTES)
     const statesave = new Uint8Array(sodium.crypto_secretstream_xchacha20poly1305_STATEBYTES)
     const statecopy = new Uint8Array(sodium.crypto_secretstream_xchacha20poly1305_STATEBYTES)
