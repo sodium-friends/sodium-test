@@ -29,7 +29,7 @@ module.exports = function (sodium) {
     t.alike(message, Buffer.from('Hello, World!'), 'decrypted')
   })
 
-  test.skip('crypto_stream_xor_instance', function (t) {
+  test('crypto_stream_xor_instance', { skip: !sodium.crypto_stream_xor_instance }, function (t) {
     const message = Buffer.from('Hello, world!')
     const nonce = random(sodium.crypto_stream_NONCEBYTES)
     const key = random(sodium.crypto_stream_KEYBYTES)
@@ -46,7 +46,7 @@ module.exports = function (sodium) {
     t.alike(out, message, 'decrypted')
   })
 
-  test.skip('crypto_stream_xor_instance with empty buffers', function (t) {
+  test('crypto_stream_xor_instance with empty buffers', { skip: !sodium.crypto_stream_xor_instance }, function (t) {
     const message = Buffer.from('Hello, world!')
     const nonce = random(sodium.crypto_stream_NONCEBYTES)
     const key = random(sodium.crypto_stream_KEYBYTES)
@@ -66,7 +66,7 @@ module.exports = function (sodium) {
     t.alike(out, message, 'decrypted')
   })
 
-  test.skip('crypto_stream_xor_instance long stream', function (t) {
+  test('crypto_stream_xor_instance long stream', { skip: !sodium.crypto_stream_xor_instance }, function (t) {
     const nonce = random(sodium.crypto_stream_NONCEBYTES)
     const key = random(sodium.crypto_stream_KEYBYTES)
 
@@ -96,7 +96,7 @@ module.exports = function (sodium) {
     t.alike(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
   })
 
-  test.skip('crypto_stream_xor_instance long stream (random chunks)', function (t) {
+  test('crypto_stream_xor_instance long stream (random chunks)', { skip: !sodium.crypto_stream_xor_instance }, function (t) {
     const nonce = random(sodium.crypto_stream_NONCEBYTES)
     const key = random(sodium.crypto_stream_KEYBYTES)
 
@@ -127,7 +127,7 @@ module.exports = function (sodium) {
     t.alike(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
   })
 
-  test.skip('crypto_stream_xor_instance long stream (random chunks) with empty buffers', function (t) {
+  test('crypto_stream_xor_instance long stream (random chunks) with empty buffers', { skip: !sodium.crypto_stream_xor_instance }, function (t) {
     const nonce = random(sodium.crypto_stream_NONCEBYTES)
     const key = random(sodium.crypto_stream_KEYBYTES)
 
@@ -189,7 +189,7 @@ module.exports = function (sodium) {
     t.alike(message, Buffer.from('Hello, World!'), 'decrypted')
   })
 
-  test.skip('crypto_stream_chacha20_xor_instance', function (t) {
+  test('crypto_stream_chacha20_xor_instance', { skip: !sodium.crypto_stream_chacha20_xor_instance }, function (t) {
     const message = Buffer.from('Hello, world!')
     const nonce = random(sodium.crypto_stream_chacha20_NONCEBYTES)
     const key = random(sodium.crypto_stream_chacha20_KEYBYTES)
@@ -206,7 +206,7 @@ module.exports = function (sodium) {
     t.alike(out, message, 'decrypted')
   })
 
-  test.skip('crypto_stream_chacha20_xor_instance with empty buffers', function (t) {
+  test('crypto_stream_chacha20_xor_instance with empty buffers', { skip: !sodium.crypto_stream_chacha20_xor_instance }, function (t) {
     const message = Buffer.from('Hello, world!')
     const nonce = random(sodium.crypto_stream_chacha20_NONCEBYTES)
     const key = random(sodium.crypto_stream_chacha20_KEYBYTES)
@@ -226,7 +226,7 @@ module.exports = function (sodium) {
     t.alike(out, message, 'decrypted')
   })
 
-  test.skip('crypto_stream_chacha20_xor_instance long stream', function (t) {
+  test('crypto_stream_chacha20_xor_instance long stream', { skip: !sodium.crypto_stream_chacha20_xor_instance }, function (t) {
     const nonce = random(sodium.crypto_stream_chacha20_NONCEBYTES)
     const key = random(sodium.crypto_stream_chacha20_KEYBYTES)
 
@@ -256,7 +256,7 @@ module.exports = function (sodium) {
     t.alike(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
   })
 
-  test.skip('crypto_stream_chacha20_xor_instance long stream (random chunks)', function (t) {
+  test('crypto_stream_chacha20_xor_instance long stream (random chunks)', { skip: !sodium.crypto_stream_chacha20_xor_instance }, function (t) {
     const nonce = random(sodium.crypto_stream_chacha20_NONCEBYTES)
     const key = random(sodium.crypto_stream_chacha20_KEYBYTES)
 
@@ -287,7 +287,7 @@ module.exports = function (sodium) {
     t.alike(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
   })
 
-  test.skip('crypto_stream_chacha20_xor_instance long stream (random chunks) with empty buffers', function (t) {
+  test('crypto_stream_chacha20_xor_instance long stream (random chunks) with empty buffers', { skip: !sodium.crypto_stream_chacha20_xor_instance }, function (t) {
     const nonce = random(sodium.crypto_stream_chacha20_NONCEBYTES)
     const key = random(sodium.crypto_stream_chacha20_KEYBYTES)
 
@@ -349,7 +349,7 @@ module.exports = function (sodium) {
     t.alike(message, Buffer.from('Hello, World!'), 'decrypted')
   })
 
-  test.skip('crypto_stream_chacha20_ietf_xor_instance', function (t) {
+  test('crypto_stream_chacha20_ietf_xor_instance', { skip: !sodium.crypto_stream_chacha20_ietf_xor_instance }, function (t) {
     const message = Buffer.from('Hello, world!')
     const nonce = random(sodium.crypto_stream_chacha20_ietf_NONCEBYTES)
     const key = random(sodium.crypto_stream_chacha20_ietf_KEYBYTES)
@@ -366,7 +366,7 @@ module.exports = function (sodium) {
     t.alike(out, message, 'decrypted')
   })
 
-  test.skip('crypto_stream_chacha20_ietf_xor_instance with empty buffers', function (t) {
+  test('crypto_stream_chacha20_ietf_xor_instance with empty buffers', { skip: !sodium.crypto_stream_chacha20_ietf_xor_instance }, function (t) {
     const message = Buffer.from('Hello, world!')
     const nonce = random(sodium.crypto_stream_chacha20_ietf_NONCEBYTES)
     const key = random(sodium.crypto_stream_chacha20_ietf_KEYBYTES)
@@ -386,7 +386,7 @@ module.exports = function (sodium) {
     t.alike(out, message, 'decrypted')
   })
 
-  test.skip('crypto_stream_chacha20_ietf_xor_instance long stream', function (t) {
+  test('crypto_stream_chacha20_ietf_xor_instance long stream', { skip: !sodium.crypto_stream_chacha20_ietf_xor_instance }, function (t) {
     const nonce = random(sodium.crypto_stream_chacha20_ietf_NONCEBYTES)
     const key = random(sodium.crypto_stream_chacha20_ietf_KEYBYTES)
 
@@ -416,7 +416,7 @@ module.exports = function (sodium) {
     t.alike(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
   })
 
-  test.skip('crypto_stream_chacha20_ietf_xor_instance long stream (random chunks)', function (t) {
+  test('crypto_stream_chacha20_ietf_xor_instance long stream (random chunks)', { skip: !sodium.crypto_stream_chacha20_ietf_xor_instance }, function (t) {
     const nonce = random(sodium.crypto_stream_chacha20_ietf_NONCEBYTES)
     const key = random(sodium.crypto_stream_chacha20_ietf_KEYBYTES)
 
@@ -447,7 +447,7 @@ module.exports = function (sodium) {
     t.alike(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
   })
 
-  test.skip('crypto_stream_chacha20_ietf_xor_instance long stream (random chunks) with empty buffers', function (t) {
+  test('crypto_stream_chacha20_ietf_xor_instance long stream (random chunks) with empty buffers', { skip: !sodium.crypto_stream_chacha20_ietf_xor_instance }, function (t) {
     const nonce = random(sodium.crypto_stream_chacha20_ietf_NONCEBYTES)
     const key = random(sodium.crypto_stream_chacha20_ietf_KEYBYTES)
 

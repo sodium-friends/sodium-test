@@ -44,7 +44,7 @@ module.exports = function (sodium) {
     t.alike(max.toString('hex'), res, 'hashed buffer max')
   })
 
-  test.skip('crypto_generichash_instance', function (t) {
+  test('crypto_generichash_instance', { skip: !sodium.crypto_generichash_instance }, function (t) {
     const instance = sodium.crypto_generichash_instance()
     const buf = Buffer.from('Hej, Verden')
 
@@ -56,7 +56,7 @@ module.exports = function (sodium) {
     t.alike(out.toString('hex'), 'cbc20f347f5dfe37dc13231cbf7eaa4ec48e585ec055a96839b213f62bd8ce00', 'streaming hash')
   })
 
-  test.skip('crypto_generichash_instance with key', function (t) {
+  test('crypto_generichash_instance with key', { skip: !sodium.crypto_generichash_instance }, function (t) {
     const key = Buffer.alloc(sodium.crypto_generichash_KEYBYTES)
     key.fill('lo')
 
@@ -71,7 +71,7 @@ module.exports = function (sodium) {
     t.alike(out.toString('hex'), '405f14acbeeb30396b8030f78e6a84bab0acf08cb1376aa200a500f669f675dc', 'streaming keyed hash')
   })
 
-  test.skip('crypto_generichash_instance with hash length', function (t) {
+  test('crypto_generichash_instance with hash length', { skip: !sodium.crypto_generichash_instance }, function (t) {
     const isntance = sodium.crypto_generichash_instance(null, sodium.crypto_generichash_BYTES_MIN)
     const buf = Buffer.from('Hej, Verden')
 
@@ -83,7 +83,7 @@ module.exports = function (sodium) {
     t.alike(out.toString('hex'), 'decacdcc3c61948c79d9f8dee5b6aa99', 'streaming short hash')
   })
 
-  test.skip('crypto_generichash_instance with key and hash length', function (t) {
+  test('crypto_generichash_instance with key and hash length', { skip: !sodium.crypto_generichash_instance }, function (t) {
     const key = Buffer.alloc(sodium.crypto_generichash_KEYBYTES)
     key.fill('lo')
 
