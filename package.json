@@ -4,11 +4,11 @@
   "description": "Test harness for Javascript libsodium implementations",
   "main": "index.js",
   "dependencies": {
-    "buffer-byte-frequency": "^1.0.1",
-    "tape": "^4.6.3"
+    "brittle": "^3.2.1",
+    "buffer-byte-frequency": "^1.0.1"
   },
   "devDependencies": {
-    "standard": "^10.0.1"
+    "standard": "^17.0.0"
   },
   "scripts": {
     "test": "standard"

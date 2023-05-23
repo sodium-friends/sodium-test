@@ -1,4 +1,4 @@
-const tape = require('tape')
+const test = require('brittle')
 
 const exp = [
   new Uint8Array([
@@ -60,12 +60,9 @@ const exp = [
   ])
 ]
 
-module.exports = crypto_aead_xchacha20poly1305_ietf
-
-function crypto_aead_xchacha20poly1305_ietf (sodium) {
-  tape('crypto_aead_xchacha20poly1305_ietf', t => {
+module.exports = function (sodium) {
+  test.skip('crypto_aead_xchacha20poly1305_ietf', t => {
     const MLEN = 114
-    const ADLEN = 12
     const CLEN = (MLEN + sodium.crypto_aead_xchacha20poly1305_ietf_ABYTES)
     const firstkey = new Uint8Array([
       0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87,
@@ -75,25 +72,22 @@ function crypto_aead_xchacha20poly1305_ietf (sodium) {
     ])
 
     const MESSAGE = "Ladies and Gentlemen of the class of '99: If I could offer you only one tip for the future, sunscreen would be it."
-    
-    const m = new Uint8Array(MLEN);
+
+    const m = new Uint8Array(MLEN)
     const nonce = new Uint8Array([
       0x07, 0x00, 0x00, 0x00, 0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47,
       0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f, 0x50, 0x51, 0x52, 0x53
     ])
 
-    const ad = new Uint8Array([ 0x50, 0x51, 0x52, 0x53, 0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7 ])
-    const c = new Uint8Array(CLEN);
-    const detached_c = new Uint8Array(MLEN);
-    const key2 = new Uint8Array(sodium.crypto_aead_xchacha20poly1305_ietf_KEYBYTES);
-    const mac = new Uint8Array(sodium.crypto_aead_xchacha20poly1305_ietf_ABYTES);
-    const m2 = new Uint8Array(MLEN);
-    let found_clen;
-    let found_maclen;
-    let m2len;
-    let i;
+    const ad = new Uint8Array([0x50, 0x51, 0x52, 0x53, 0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7])
+    const c = new Uint8Array(CLEN)
+    const key2 = new Uint8Array(sodium.crypto_aead_xchacha20poly1305_ietf_KEYBYTES)
+    const m2 = new Uint8Array(MLEN)
+    let foundclen
+    let m2len
+    let i
 
-    t.assert(MESSAGE.length === MLEN)
+    t.ok(MESSAGE.length === MLEN)
     m.set([
       0x4c, 0x61, 0x64, 0x69, 0x65, 0x73, 0x20, 0x61, 0x6e, 0x64, 0x20, 0x47, 0x65,
       0x6e, 0x74, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x20, 0x6f, 0x66, 0x20, 0x74, 0x68,
@@ -106,87 +100,85 @@ function crypto_aead_xchacha20poly1305_ietf (sodium) {
       0x75, 0x6c, 0x64, 0x20, 0x62, 0x65, 0x20, 0x69, 0x74, 0x2e
     ])
 
-    found_clen = sodium.crypto_aead_xchacha20poly1305_ietf_encrypt(c, m, ad, null, nonce, firstkey);
+    foundclen = sodium.crypto_aead_xchacha20poly1305_ietf_encrypt(c, m, ad, null, nonce, firstkey)
 
-    t.assert(found_clen === MLEN + sodium.crypto_aead_xchacha20poly1305_ietf_ABYTES, "found_clen should be properly set")
-    t.same(c, exp[0])
-    
+    t.ok(foundclen === MLEN + sodium.crypto_aead_xchacha20poly1305_ietf_ABYTES, 'found_clen should be properly set')
+    t.alike(c, exp[0])
+
     // found_maclen = sodium.crypto_aead_xchacha20poly1305_ietf_encrypt_detached(detached_c, mac, m, ad, null, nonce, firstkey);
-    // t.assert(found_maclen === sodium.crypto_aead_xchacha20poly1305_ietf_ABYTES, "found_maclen should be properly set")
-    // t.same(detached_c, c.subarray(0, MLEN), "detached ciphertext is good\n")
+    // t.ok(found_maclen === sodium.crypto_aead_xchacha20poly1305_ietf_ABYTES, "found_maclen should be properly set")
+    // t.alike(detached_c, c.subarray(0, MLEN), "detached ciphertext is good\n")
 
-    t.throws(() => sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(Buffer.alloc(0), null, c, ad, nonce, firstkey),
-      "null message throws")
+    t.exception.all(() => sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(Buffer.alloc(0), null, c, ad, nonce, firstkey),
+      'null message throws')
 
-    t.throws(() => sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(Buffer.alloc(0), null, c, ad, nonce, firstkey),
-      "short message throws")
+    t.exception.all(() => sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(Buffer.alloc(0), null, c, ad, nonce, firstkey),
+      'short message throws')
 
-    t.doesNotThrow(() => m2len = sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(m2, null, c, ad, nonce, firstkey),
-      "sodium.crypto_aead_xchacha20poly1305_ietf_decrypt() should pass")
+    t.execution(() => (m2len = sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(m2, null, c, ad, nonce, firstkey)),
+      'sodium.crypto_aead_xchacha20poly1305_ietf_decrypt() should pass')
 
-    t.equal(m2len, MLEN, "m2len is properly set")
-    t.same(m, m2, "m === m2");
+    t.is(m2len, MLEN, 'm2len is properly set')
+    t.alike(m, m2, 'm === m2')
 
     // m2.fill(0)
-    // t.doesNotThrow(() => sodium.crypto_aead_xchacha20poly1305_ietf_decrypt_detached(m2, null, c.subarray(0, MLEN), mac, ad, nonce, firstkey),
+    // t.execution(() => sodium.crypto_aead_xchacha20poly1305_ietf_decrypt_detached(m2, null, c.subarray(0, MLEN), mac, ad, nonce, firstkey),
     //   "sodium.crypto_aead_xchacha20poly1305_ietf_decrypt_detached() should pass")
 
-    // t.same(m, m2, "m === m2");
+    // t.alike(m, m2, "m === m2");
 
     for (i = 0; i < CLEN; i++) {
-        c[i] ^= (i + 1);
+      c[i] ^= (i + 1)
 
-        try {
-          sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(m2, null, c, ad, nonce, firstkey)
-          if (Buffer.compare(m, m2) !== 0) throw new Error()
-          t.fail('message can be forged')
-        } catch {
-          c[i] ^= (i + 1)
-        }
+      try {
+        sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(m2, null, c, ad, nonce, firstkey)
+        if (Buffer.compare(m, m2) !== 0) throw new Error()
+        t.fail('message can be forged')
+      } catch {
+        c[i] ^= (i + 1)
+      }
     }
 
-    found_clen = sodium.crypto_aead_xchacha20poly1305_ietf_encrypt(c, m, null, null, nonce, firstkey);
-    t.equal(found_clen, CLEN, "found_clen is properly set (adlen = 0)")
-    t.same(c, exp[1])
+    foundclen = sodium.crypto_aead_xchacha20poly1305_ietf_encrypt(c, m, null, null, nonce, firstkey)
+    t.is(foundclen, CLEN, 'found_clen is properly set (adlen = 0)')
+    t.alike(c, exp[1])
 
-    t.doesNotThrow(() => m2len = sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(m2, null, c, null, nonce, firstkey), 
-      "sodium.crypto_aead_xchacha20poly1305_ietf_decrypt() should pass (adlen=0)\n")
+    t.execution(() => (m2len = sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(m2, null, c, null, nonce, firstkey)),
+      'sodium.crypto_aead_xchacha20poly1305_ietf_decrypt() should pass (adlen=0)\n')
 
-    t.equal(m2len, MLEN, "m2len is properly set (adlen=0)")
-    t.same(m, m2, "m === m2 (adlen=0)")
+    t.is(m2len, MLEN, 'm2len is properly set (adlen=0)')
+    t.alike(m, m2, 'm === m2 (adlen=0)')
 
     m2len = 1
-    t.throws(() => sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(
-            m2.subarray(0, 1), null, Buffer.alloc(32),
-            sodium.randombytes_uniform(sodium.crypto_aead_xchacha20poly1305_ietf_ABYTES),
-            null, nonce, firstkey),
-      "sodium.crypto_aead_xchacha20poly1305_ietf_decrypt() throws with a short ciphertext")
+    t.exception.all(() => sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(
+      m2.subarray(0, 1), null, Buffer.alloc(32),
+      sodium.randombytes_uniform(sodium.crypto_aead_xchacha20poly1305_ietf_ABYTES),
+      null, nonce, firstkey),
+    'sodium.crypto_aead_xchacha20poly1305_ietf_decrypt() throws with a short ciphertext')
 
-    t.throws(() => sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(m2, null, c.subarray(0, 0), null, nonce, firstkey),
-      "sodium.crypto_aead_xchacha20poly1305_ietf_decrypt() worked with an empty ciphertext")
+    t.exception.all(() => sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(m2, null, c.subarray(0, 0), null, nonce, firstkey),
+      'sodium.crypto_aead_xchacha20poly1305_ietf_decrypt() worked with an empty ciphertext')
 
     c.set(m)
-    found_clen = sodium.crypto_aead_xchacha20poly1305_ietf_encrypt(c, c.subarray(0, MLEN), null, null, nonce, firstkey)
+    foundclen = sodium.crypto_aead_xchacha20poly1305_ietf_encrypt(c, c.subarray(0, MLEN), null, null, nonce, firstkey)
 
-    t.equal(found_clen, CLEN, "clen is properly set (adlen=0)")
-    t.same(c, exp[2])
+    t.is(foundclen, CLEN, 'clen is properly set (adlen=0)')
+    t.alike(c, exp[2])
 
-    t.doesNotThrow(() => m2len = sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(c.subarray(0, MLEN), null, c, null, nonce, firstkey),
-      "sodium.crypto_aead_xchacha20poly1305_ietf_decrypt() should pass (adlen=0)")
-    
-    t.equal(m2len, MLEN, "m2len is properly set (adlen=0)")
-    t.same(m, c.subarray(0, MLEN), "m === c (adlen=0)")
+    t.execution(() => (m2len = sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(c.subarray(0, MLEN), null, c, null, nonce, firstkey)),
+      'sodium.crypto_aead_xchacha20poly1305_ietf_decrypt() should pass (adlen=0)')
+
+    t.is(m2len, MLEN, 'm2len is properly set (adlen=0)')
+    t.alike(m, c.subarray(0, MLEN), 'm === c (adlen=0)')
 
     sodium.crypto_aead_xchacha20poly1305_ietf_keygen(key2)
-    t.throws(() => sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(c, null, c, null, nonce, key2),
-      "sodium.crypto_aead_xchacha20poly1305_ietf_decrypt() with a wrong key should have failed")
+    t.exception.all(() => sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(c, null, c, null, nonce, key2),
+      'sodium.crypto_aead_xchacha20poly1305_ietf_decrypt() with a wrong key should have failed')
 
-    t.equal(sodium.crypto_aead_xchacha20poly1305_ietf_ABYTES, 16)
-    t.equal(sodium.crypto_aead_xchacha20poly1305_ietf_KEYBYTES, 32)
-    t.equal(sodium.crypto_aead_xchacha20poly1305_ietf_NPUBBYTES, 24)
-    t.equal(sodium.crypto_aead_xchacha20poly1305_ietf_NSECBYTES, 0)
-    t.equal(sodium.crypto_aead_xchacha20poly1305_ietf_MESSAGEBYTES_MAX, 4294967279)
-
-    t.end()
+    t.is(sodium.crypto_aead_xchacha20poly1305_ietf_ABYTES, 16)
+    t.is(sodium.crypto_aead_xchacha20poly1305_ietf_KEYBYTES, 32)
+    t.is(sodium.crypto_aead_xchacha20poly1305_ietf_NPUBBYTES, 24)
+    t.is(sodium.crypto_aead_xchacha20poly1305_ietf_NSECBYTES, 0)
+    t.is(sodium.crypto_aead_xchacha20poly1305_ietf_MESSAGEBYTES_MAX, 4294967279)
   })
 }

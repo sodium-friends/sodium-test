@@ -1,6 +1,6 @@
-var test = require('tape')
+const test = require('brittle')
 
-var vectors = [ // generated from https://github.com/jedisct1/siphash-js/blob/master/test/index.js
+const vectors = [ // generated from https://github.com/jedisct1/siphash-js/blob/master/test/index.js
   ['aON1dHrq90SbG8Hx', 'v7LyiwuCrB7EgAibPve6Yg2gLmggxE6j7ocR37EudrH_P9XX2rQK', [147, 73, 50, 63, 71, 98, 203, 42]],
   ['YOT4AG5F7ONRW5na', '4Ks1pPO_2wGYR-gfJShqUO-FirA9c5cF4oKwvStp2Ix5hHUg2klPofVJ8TZoBdFfgTh8', [138, 27, 129, 27, 185, 163, 160, 153]],
   ['63UlqXfSckA3Dv8S', 'bMQudI8yVdDx5ScGQCMQy4K_QXYCq1w1eC', [6, 78, 44, 167, 186, 29, 113, 244]],
@@ -155,45 +155,45 @@ var vectors = [ // generated from https://github.com/jedisct1/siphash-js/blob/ma
 ]
 
 module.exports = function (sodium) {
-  test('constants', function (assert) {
-    assert.ok(sodium.crypto_shorthash_PRIMITIVE)
-    assert.ok(sodium.crypto_shorthash_KEYBYTES > 0)
-    assert.ok(sodium.crypto_shorthash_BYTES > 0)
-    assert.end()
+  test('constants', function (t) {
+    t.ok(sodium.crypto_shorthash_PRIMITIVE)
+    t.ok(sodium.crypto_shorthash_KEYBYTES > 0)
+    t.ok(sodium.crypto_shorthash_BYTES > 0)
+    t.end()
   })
 
-  test('crypto_shorthash fixtures', function (assert) {
-    run(assert)
+  test('crypto_shorthash fixtures', function (t) {
+    run(t)
   })
 
-  test('crypto_shorthash fixtures (wasm)', function (assert) {
+  test('crypto_shorthash fixtures (wasm)', function (t) {
     if (!sodium.crypto_shorthash_WASM_SUPPORTED) {
-      assert.pass('wasm not supported')
-      assert.end()
+      t.pass('wasm not supported')
+      t.end()
       return
     }
 
-    assert.ok(sodium.crypto_shorthash_WASM_LOADED)
-    run(assert)
+    t.ok(sodium.crypto_shorthash_WASM_LOADED)
+    run(t)
   })
 
-  function run (assert) {
-    for (var i = 0; i < vectors.length; i++) {
-      var v = vectors[i]
-      var key = Buffer.from(v[0])
-      var message = Buffer.from(v[1])
-      var expected = Buffer.from(v[2])
-      var out = Buffer.alloc(sodium.crypto_shorthash_BYTES)
+  function run (t) {
+    for (let i = 0; i < vectors.length; i++) {
+      const v = vectors[i]
+      const key = Buffer.from(v[0])
+      const message = Buffer.from(v[1])
+      const expected = Buffer.from(v[2])
+      const out = Buffer.alloc(sodium.crypto_shorthash_BYTES)
 
       sodium.crypto_shorthash(out, message, key)
       if (Buffer.compare(out, expected) !== 0) {
-        assert.fail('Failed on fixture #' + i)
-        assert.end()
+        t.fail('Failed on fixture #' + i)
+        t.end()
         return
       }
     }
 
-    assert.pass('Passed all fixtures')
-    assert.end()
+    t.pass('Passed all fixtures')
+    t.end()
   }
 }

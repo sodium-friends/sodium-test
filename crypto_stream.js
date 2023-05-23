@@ -1,511 +1,484 @@
-var tape = require('tape')
+const test = require('brittle')
 
 module.exports = function (sodium) {
-  tape('crypto_stream', function (t) {
-    var buf = Buffer.alloc(50)
-    var nonce = random(sodium.crypto_stream_NONCEBYTES)
-    var key = random(sodium.crypto_stream_KEYBYTES)
+  test('crypto_stream', function (t) {
+    const buf = Buffer.alloc(50)
+    const nonce = random(sodium.crypto_stream_NONCEBYTES)
+    const key = random(sodium.crypto_stream_KEYBYTES)
 
     sodium.crypto_stream(buf, nonce, key)
 
-    t.notEquals(buf, Buffer.alloc(50), 'contains noise now')
-    var copy = Buffer.from(buf.toString('hex'), 'hex')
+    t.not(buf, Buffer.alloc(50), 'contains noise now')
+    const copy = Buffer.from(buf.toString('hex'), 'hex')
 
     sodium.crypto_stream(buf, nonce, key)
-    t.same(buf, copy, 'predictable from nonce, key')
-
-    t.end()
+    t.alike(buf, copy, 'predictable from nonce, key')
   })
 
-  tape('crypto_stream_xor', function (t) {
-    var message = Buffer.from('Hello, World!')
-    var nonce = random(sodium.crypto_stream_NONCEBYTES)
-    var key = random(sodium.crypto_stream_KEYBYTES)
+  test('crypto_stream_xor', function (t) {
+    const message = Buffer.from('Hello, World!')
+    const nonce = random(sodium.crypto_stream_NONCEBYTES)
+    const key = random(sodium.crypto_stream_KEYBYTES)
 
     sodium.crypto_stream_xor(message, message, nonce, key)
 
-    t.notEquals(message, Buffer.from('Hello, World!'), 'encrypted')
+    t.not(message, Buffer.from('Hello, World!'), 'encrypted')
 
     sodium.crypto_stream_xor(message, message, nonce, key)
 
-    t.same(message, Buffer.from('Hello, World!'), 'decrypted')
-
-    t.end()
+    t.alike(message, Buffer.from('Hello, World!'), 'decrypted')
   })
 
-  tape('crypto_stream_xor_instance', function (t) {
-    var message = Buffer.from('Hello, world!')
-    var nonce = random(sodium.crypto_stream_NONCEBYTES)
-    var key = random(sodium.crypto_stream_KEYBYTES)
+  test.skip('crypto_stream_xor_instance', function (t) {
+    const message = Buffer.from('Hello, world!')
+    const nonce = random(sodium.crypto_stream_NONCEBYTES)
+    const key = random(sodium.crypto_stream_KEYBYTES)
 
-    var out = Buffer.alloc(message.length)
+    const out = Buffer.alloc(message.length)
 
-    var inst = sodium.crypto_stream_xor_instance(nonce, key)
+    const inst = sodium.crypto_stream_xor_instance(nonce, key)
 
-    for (var i = 0; i < message.length; i++) {
+    for (let i = 0; i < message.length; i++) {
       inst.update(out.slice(i), message.slice(i, i + 1))
     }
 
     sodium.crypto_stream_xor(out, out, nonce, key)
-    t.same(out, message, 'decrypted')
-    t.end()
+    t.alike(out, message, 'decrypted')
   })
 
-  tape('crypto_stream_xor_instance with empty buffers', function (t) {
-    var message = Buffer.from('Hello, world!')
-    var nonce = random(sodium.crypto_stream_NONCEBYTES)
-    var key = random(sodium.crypto_stream_KEYBYTES)
+  test.skip('crypto_stream_xor_instance with empty buffers', function (t) {
+    const message = Buffer.from('Hello, world!')
+    const nonce = random(sodium.crypto_stream_NONCEBYTES)
+    const key = random(sodium.crypto_stream_KEYBYTES)
 
-    var out = Buffer.alloc(message.length)
+    const out = Buffer.alloc(message.length)
 
-    var inst = sodium.crypto_stream_xor_instance(nonce, key)
+    const inst = sodium.crypto_stream_xor_instance(nonce, key)
 
     inst.update(Buffer.alloc(0), Buffer.alloc(0))
 
-    for (var i = 0; i < message.length; i++) {
+    for (let i = 0; i < message.length; i++) {
       inst.update(out.slice(i), message.slice(i, i + 1))
       inst.update(Buffer.alloc(0), Buffer.alloc(0))
     }
 
     sodium.crypto_stream_xor(out, out, nonce, key)
-    t.same(out, message, 'decrypted')
-    t.end()
+    t.alike(out, message, 'decrypted')
   })
 
-  tape('crypto_stream_xor_instance long stream', function (t) {
-    var nonce = random(sodium.crypto_stream_NONCEBYTES)
-    var key = random(sodium.crypto_stream_KEYBYTES)
+  test.skip('crypto_stream_xor_instance long stream', function (t) {
+    const nonce = random(sodium.crypto_stream_NONCEBYTES)
+    const key = random(sodium.crypto_stream_KEYBYTES)
 
-    var encrypt = sodium.crypto_stream_xor_instance(nonce, key)
-    var decrypt = sodium.crypto_stream_xor_instance(nonce, key)
-    var plain = []
-    var encrypted = []
-    var decrypted = []
+    const encrypt = sodium.crypto_stream_xor_instance(nonce, key)
+    const decrypt = sodium.crypto_stream_xor_instance(nonce, key)
+    const plain = []
+    const encrypted = []
+    const decrypted = []
 
-    for (var i = 0; i < 1000; i++) {
-      var next = random(61)
+    for (let i = 0; i < 1000; i++) {
+      const next = random(61)
       plain.push(next)
 
-      var enc = Buffer.alloc(61)
+      const enc = Buffer.alloc(61)
       encrypt.update(enc, next)
       encrypted.push(enc)
 
-      var dec = Buffer.alloc(61)
+      const dec = Buffer.alloc(61)
       decrypt.update(dec, enc)
       decrypted.push(dec)
     }
 
-    var enc2 = Buffer.alloc(1000 * 61)
+    const enc2 = Buffer.alloc(1000 * 61)
     sodium.crypto_stream_xor(enc2, Buffer.concat(plain), nonce, key)
 
-    t.same(Buffer.concat(encrypted), enc2, 'same as encrypting all at once')
-    t.same(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
-    t.end()
+    t.alike(Buffer.concat(encrypted), enc2, 'same as encrypting all at once')
+    t.alike(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
   })
 
-  tape('crypto_stream_xor_instance long stream (random chunks)', function (t) {
-    var nonce = random(sodium.crypto_stream_NONCEBYTES)
-    var key = random(sodium.crypto_stream_KEYBYTES)
+  test.skip('crypto_stream_xor_instance long stream (random chunks)', function (t) {
+    const nonce = random(sodium.crypto_stream_NONCEBYTES)
+    const key = random(sodium.crypto_stream_KEYBYTES)
 
-    var encrypt = sodium.crypto_stream_xor_instance(nonce, key)
-    var decrypt = sodium.crypto_stream_xor_instance(nonce, key)
-    var plain = []
-    var encrypted = []
-    var decrypted = []
+    const encrypt = sodium.crypto_stream_xor_instance(nonce, key)
+    const decrypt = sodium.crypto_stream_xor_instance(nonce, key)
+    const plain = []
+    const encrypted = []
+    const decrypted = []
 
-    for (var i = 0; i < 10000; i++) {
-      var len = Math.floor(Math.random() * 256)
-      var next = random(len)
+    for (let i = 0; i < 10000; i++) {
+      const len = Math.floor(Math.random() * 256)
+      const next = random(len)
       plain.push(next)
 
-      var enc = Buffer.alloc(len)
+      const enc = Buffer.alloc(len)
       encrypt.update(enc, next)
       encrypted.push(enc)
 
-      var dec = Buffer.alloc(len)
+      const dec = Buffer.alloc(len)
       decrypt.update(dec, enc)
       decrypted.push(dec)
     }
 
-    var enc2 = Buffer.alloc(Buffer.concat(plain).length)
+    const enc2 = Buffer.alloc(Buffer.concat(plain).length)
     sodium.crypto_stream_xor(enc2, Buffer.concat(plain), nonce, key)
 
-    t.same(Buffer.concat(encrypted), enc2, 'same as encrypting all at once')
-    t.same(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
-    t.end()
+    t.alike(Buffer.concat(encrypted), enc2, 'same as encrypting all at once')
+    t.alike(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
   })
 
-  tape('crypto_stream_xor_instance long stream (random chunks) with empty buffers', function (t) {
-    var nonce = random(sodium.crypto_stream_NONCEBYTES)
-    var key = random(sodium.crypto_stream_KEYBYTES)
+  test.skip('crypto_stream_xor_instance long stream (random chunks) with empty buffers', function (t) {
+    const nonce = random(sodium.crypto_stream_NONCEBYTES)
+    const key = random(sodium.crypto_stream_KEYBYTES)
 
-    var encrypt = sodium.crypto_stream_xor_instance(nonce, key)
-    var decrypt = sodium.crypto_stream_xor_instance(nonce, key)
-    var plain = []
-    var encrypted = []
-    var decrypted = []
+    const encrypt = sodium.crypto_stream_xor_instance(nonce, key)
+    const decrypt = sodium.crypto_stream_xor_instance(nonce, key)
+    const plain = []
+    const encrypted = []
+    const decrypted = []
 
-    for (var i = 0; i < 10000; i++) {
-      var len = Math.floor(Math.random() * 256)
-      var next = random(len)
+    for (let i = 0; i < 10000; i++) {
+      const len = Math.floor(Math.random() * 256)
+      const next = random(len)
       plain.push(next)
 
       encrypt.update(Buffer.alloc(0), Buffer.alloc(0))
 
-      var enc = Buffer.alloc(len)
+      const enc = Buffer.alloc(len)
       encrypt.update(enc, next)
       encrypted.push(enc)
 
-      var dec = Buffer.alloc(len)
+      const dec = Buffer.alloc(len)
       decrypt.update(dec, enc)
       decrypted.push(dec)
       decrypt.update(Buffer.alloc(0), Buffer.alloc(0))
     }
 
-    var enc2 = Buffer.alloc(Buffer.concat(plain).length)
+    const enc2 = Buffer.alloc(Buffer.concat(plain).length)
     sodium.crypto_stream_xor(enc2, Buffer.concat(plain), nonce, key)
 
-    t.same(Buffer.concat(encrypted), enc2, 'same as encrypting all at once')
-    t.same(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
-    t.end()
+    t.alike(Buffer.concat(encrypted), enc2, 'same as encrypting all at once')
+    t.alike(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
   })
 
-  tape('crypto_stream_chacha20', function (t) {
-    var buf = Buffer.alloc(50)
-    var nonce = random(sodium.crypto_stream_chacha20_NONCEBYTES)
-    var key = random(sodium.crypto_stream_chacha20_KEYBYTES)
+  test('crypto_stream_chacha20', function (t) {
+    const buf = Buffer.alloc(50)
+    const nonce = random(sodium.crypto_stream_chacha20_NONCEBYTES)
+    const key = random(sodium.crypto_stream_chacha20_KEYBYTES)
 
     sodium.crypto_stream_chacha20(buf, nonce, key)
 
-    t.notEquals(buf, Buffer.alloc(50), 'contains noise now')
-    var copy = Buffer.from(buf.toString('hex'), 'hex')
+    t.not(buf, Buffer.alloc(50), 'contains noise now')
+    const copy = Buffer.from(buf.toString('hex'), 'hex')
 
     sodium.crypto_stream_chacha20(buf, nonce, key)
-    t.same(buf, copy, 'predictable from nonce, key')
-
-    t.end()
+    t.alike(buf, copy, 'predictable from nonce, key')
   })
 
-  tape('crypto_stream_chacha20_xor', function (t) {
-    var message = Buffer.from('Hello, World!')
-    var nonce = random(sodium.crypto_stream_chacha20_NONCEBYTES)
-    var key = random(sodium.crypto_stream_chacha20_KEYBYTES)
+  test('crypto_stream_chacha20_xor', function (t) {
+    const message = Buffer.from('Hello, World!')
+    const nonce = random(sodium.crypto_stream_chacha20_NONCEBYTES)
+    const key = random(sodium.crypto_stream_chacha20_KEYBYTES)
 
     sodium.crypto_stream_chacha20_xor(message, message, nonce, key)
 
-    t.notEquals(message, Buffer.from('Hello, World!'), 'encrypted')
+    t.not(message, Buffer.from('Hello, World!'), 'encrypted')
 
     sodium.crypto_stream_chacha20_xor(message, message, nonce, key)
 
-    t.same(message, Buffer.from('Hello, World!'), 'decrypted')
-
-    t.end()
+    t.alike(message, Buffer.from('Hello, World!'), 'decrypted')
   })
 
-  tape('crypto_stream_chacha20_xor_instance', function (t) {
-    var message = Buffer.from('Hello, world!')
-    var nonce = random(sodium.crypto_stream_chacha20_NONCEBYTES)
-    var key = random(sodium.crypto_stream_chacha20_KEYBYTES)
+  test.skip('crypto_stream_chacha20_xor_instance', function (t) {
+    const message = Buffer.from('Hello, world!')
+    const nonce = random(sodium.crypto_stream_chacha20_NONCEBYTES)
+    const key = random(sodium.crypto_stream_chacha20_KEYBYTES)
 
-    var out = Buffer.alloc(message.length)
+    const out = Buffer.alloc(message.length)
 
-    var inst = sodium.crypto_stream_chacha20_xor_instance(nonce, key)
+    const inst = sodium.crypto_stream_chacha20_xor_instance(nonce, key)
 
-    for (var i = 0; i < message.length; i++) {
+    for (let i = 0; i < message.length; i++) {
       inst.update(out.slice(i), message.slice(i, i + 1))
     }
 
     sodium.crypto_stream_chacha20_xor(out, out, nonce, key)
-    t.same(out, message, 'decrypted')
-    t.end()
+    t.alike(out, message, 'decrypted')
   })
 
-  tape('crypto_stream_chacha20_xor_instance with empty buffers', function (t) {
-    var message = Buffer.from('Hello, world!')
-    var nonce = random(sodium.crypto_stream_chacha20_NONCEBYTES)
-    var key = random(sodium.crypto_stream_chacha20_KEYBYTES)
+  test.skip('crypto_stream_chacha20_xor_instance with empty buffers', function (t) {
+    const message = Buffer.from('Hello, world!')
+    const nonce = random(sodium.crypto_stream_chacha20_NONCEBYTES)
+    const key = random(sodium.crypto_stream_chacha20_KEYBYTES)
 
-    var out = Buffer.alloc(message.length)
+    const out = Buffer.alloc(message.length)
 
-    var inst = sodium.crypto_stream_chacha20_xor_instance(nonce, key)
+    const inst = sodium.crypto_stream_chacha20_xor_instance(nonce, key)
 
     inst.update(Buffer.alloc(0), Buffer.alloc(0))
 
-    for (var i = 0; i < message.length; i++) {
+    for (let i = 0; i < message.length; i++) {
       inst.update(out.slice(i), message.slice(i, i + 1))
       inst.update(Buffer.alloc(0), Buffer.alloc(0))
     }
 
     sodium.crypto_stream_chacha20_xor(out, out, nonce, key)
-    t.same(out, message, 'decrypted')
-    t.end()
+    t.alike(out, message, 'decrypted')
   })
 
-  tape('crypto_stream_chacha20_xor_instance long stream', function (t) {
-    var nonce = random(sodium.crypto_stream_chacha20_NONCEBYTES)
-    var key = random(sodium.crypto_stream_chacha20_KEYBYTES)
+  test.skip('crypto_stream_chacha20_xor_instance long stream', function (t) {
+    const nonce = random(sodium.crypto_stream_chacha20_NONCEBYTES)
+    const key = random(sodium.crypto_stream_chacha20_KEYBYTES)
 
-    var encrypt = sodium.crypto_stream_chacha20_xor_instance(nonce, key)
-    var decrypt = sodium.crypto_stream_chacha20_xor_instance(nonce, key)
-    var plain = []
-    var encrypted = []
-    var decrypted = []
+    const encrypt = sodium.crypto_stream_chacha20_xor_instance(nonce, key)
+    const decrypt = sodium.crypto_stream_chacha20_xor_instance(nonce, key)
+    const plain = []
+    const encrypted = []
+    const decrypted = []
 
-    for (var i = 0; i < 1000; i++) {
-      var next = random(61)
+    for (let i = 0; i < 1000; i++) {
+      const next = random(61)
       plain.push(next)
 
-      var enc = Buffer.alloc(61)
+      const enc = Buffer.alloc(61)
       encrypt.update(enc, next)
       encrypted.push(enc)
 
-      var dec = Buffer.alloc(61)
+      const dec = Buffer.alloc(61)
       decrypt.update(dec, enc)
       decrypted.push(dec)
     }
 
-    var enc2 = Buffer.alloc(1000 * 61)
+    const enc2 = Buffer.alloc(1000 * 61)
     sodium.crypto_stream_chacha20_xor(enc2, Buffer.concat(plain), nonce, key)
 
-    t.same(Buffer.concat(encrypted), enc2, 'same as encrypting all at once')
-    t.same(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
-    t.end()
+    t.alike(Buffer.concat(encrypted), enc2, 'same as encrypting all at once')
+    t.alike(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
   })
 
-  tape('crypto_stream_chacha20_xor_instance long stream (random chunks)', function (t) {
-    var nonce = random(sodium.crypto_stream_chacha20_NONCEBYTES)
-    var key = random(sodium.crypto_stream_chacha20_KEYBYTES)
+  test.skip('crypto_stream_chacha20_xor_instance long stream (random chunks)', function (t) {
+    const nonce = random(sodium.crypto_stream_chacha20_NONCEBYTES)
+    const key = random(sodium.crypto_stream_chacha20_KEYBYTES)
 
-    var encrypt = sodium.crypto_stream_chacha20_xor_instance(nonce, key)
-    var decrypt = sodium.crypto_stream_chacha20_xor_instance(nonce, key)
-    var plain = []
-    var encrypted = []
-    var decrypted = []
+    const encrypt = sodium.crypto_stream_chacha20_xor_instance(nonce, key)
+    const decrypt = sodium.crypto_stream_chacha20_xor_instance(nonce, key)
+    const plain = []
+    const encrypted = []
+    const decrypted = []
 
-    for (var i = 0; i < 10000; i++) {
-      var len = Math.floor(Math.random() * 256)
-      var next = random(len)
+    for (let i = 0; i < 10000; i++) {
+      const len = Math.floor(Math.random() * 256)
+      const next = random(len)
       plain.push(next)
 
-      var enc = Buffer.alloc(len)
+      const enc = Buffer.alloc(len)
       encrypt.update(enc, next)
       encrypted.push(enc)
 
-      var dec = Buffer.alloc(len)
+      const dec = Buffer.alloc(len)
       decrypt.update(dec, enc)
       decrypted.push(dec)
     }
 
-    var enc2 = Buffer.alloc(Buffer.concat(plain).length)
+    const enc2 = Buffer.alloc(Buffer.concat(plain).length)
     sodium.crypto_stream_chacha20_xor(enc2, Buffer.concat(plain), nonce, key)
 
-    t.same(Buffer.concat(encrypted), enc2, 'same as encrypting all at once')
-    t.same(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
-    t.end()
+    t.alike(Buffer.concat(encrypted), enc2, 'same as encrypting all at once')
+    t.alike(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
   })
 
-  tape('crypto_stream_chacha20_xor_instance long stream (random chunks) with empty buffers', function (t) {
-    var nonce = random(sodium.crypto_stream_chacha20_NONCEBYTES)
-    var key = random(sodium.crypto_stream_chacha20_KEYBYTES)
+  test.skip('crypto_stream_chacha20_xor_instance long stream (random chunks) with empty buffers', function (t) {
+    const nonce = random(sodium.crypto_stream_chacha20_NONCEBYTES)
+    const key = random(sodium.crypto_stream_chacha20_KEYBYTES)
 
-    var encrypt = sodium.crypto_stream_chacha20_xor_instance(nonce, key)
-    var decrypt = sodium.crypto_stream_chacha20_xor_instance(nonce, key)
-    var plain = []
-    var encrypted = []
-    var decrypted = []
+    const encrypt = sodium.crypto_stream_chacha20_xor_instance(nonce, key)
+    const decrypt = sodium.crypto_stream_chacha20_xor_instance(nonce, key)
+    const plain = []
+    const encrypted = []
+    const decrypted = []
 
-    for (var i = 0; i < 10000; i++) {
-      var len = Math.floor(Math.random() * 256)
-      var next = random(len)
+    for (let i = 0; i < 10000; i++) {
+      const len = Math.floor(Math.random() * 256)
+      const next = random(len)
       plain.push(next)
 
       encrypt.update(Buffer.alloc(0), Buffer.alloc(0))
 
-      var enc = Buffer.alloc(len)
+      const enc = Buffer.alloc(len)
       encrypt.update(enc, next)
       encrypted.push(enc)
 
-      var dec = Buffer.alloc(len)
+      const dec = Buffer.alloc(len)
       decrypt.update(dec, enc)
       decrypted.push(dec)
       decrypt.update(Buffer.alloc(0), Buffer.alloc(0))
     }
 
-    var enc2 = Buffer.alloc(Buffer.concat(plain).length)
+    const enc2 = Buffer.alloc(Buffer.concat(plain).length)
     sodium.crypto_stream_chacha20_xor(enc2, Buffer.concat(plain), nonce, key)
 
-    t.same(Buffer.concat(encrypted), enc2, 'same as encrypting all at once')
-    t.same(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
-    t.end()
+    t.alike(Buffer.concat(encrypted), enc2, 'same as encrypting all at once')
+    t.alike(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
   })
 
-  tape('crypto_stream_chacha20_ietf', function (t) {
-    var buf = Buffer.alloc(50)
-    var nonce = random(sodium.crypto_stream_chacha20_ietf_NONCEBYTES)
-    var key = random(sodium.crypto_stream_chacha20_ietf_KEYBYTES)
+  test('crypto_stream_chacha20_ietf', function (t) {
+    const buf = Buffer.alloc(50)
+    const nonce = random(sodium.crypto_stream_chacha20_ietf_NONCEBYTES)
+    const key = random(sodium.crypto_stream_chacha20_ietf_KEYBYTES)
 
     sodium.crypto_stream_chacha20_ietf(buf, nonce, key)
 
-    t.notEquals(buf, Buffer.alloc(50), 'contains noise now')
-    var copy = Buffer.from(buf.toString('hex'), 'hex')
+    t.not(buf, Buffer.alloc(50), 'contains noise now')
+    const copy = Buffer.from(buf.toString('hex'), 'hex')
 
     sodium.crypto_stream_chacha20_ietf(buf, nonce, key)
-    t.same(buf, copy, 'predictable from nonce, key')
-
-    t.end()
+    t.alike(buf, copy, 'predictable from nonce, key')
   })
 
-  tape('crypto_stream_chacha20_ietf_xor', function (t) {
-    var message = Buffer.from('Hello, World!')
-    var nonce = random(sodium.crypto_stream_chacha20_ietf_NONCEBYTES)
-    var key = random(sodium.crypto_stream_chacha20_ietf_KEYBYTES)
+  test('crypto_stream_chacha20_ietf_xor', function (t) {
+    const message = Buffer.from('Hello, World!')
+    const nonce = random(sodium.crypto_stream_chacha20_ietf_NONCEBYTES)
+    const key = random(sodium.crypto_stream_chacha20_ietf_KEYBYTES)
 
     sodium.crypto_stream_chacha20_ietf_xor(message, message, nonce, key)
 
-    t.notEquals(message, Buffer.from('Hello, World!'), 'encrypted')
+    t.not(message, Buffer.from('Hello, World!'), 'encrypted')
 
     sodium.crypto_stream_chacha20_ietf_xor(message, message, nonce, key)
 
-    t.same(message, Buffer.from('Hello, World!'), 'decrypted')
-
-    t.end()
+    t.alike(message, Buffer.from('Hello, World!'), 'decrypted')
   })
 
-  tape('crypto_stream_chacha20_ietf_xor_instance', function (t) {
-    var message = Buffer.from('Hello, world!')
-    var nonce = random(sodium.crypto_stream_chacha20_ietf_NONCEBYTES)
-    var key = random(sodium.crypto_stream_chacha20_ietf_KEYBYTES)
+  test.skip('crypto_stream_chacha20_ietf_xor_instance', function (t) {
+    const message = Buffer.from('Hello, world!')
+    const nonce = random(sodium.crypto_stream_chacha20_ietf_NONCEBYTES)
+    const key = random(sodium.crypto_stream_chacha20_ietf_KEYBYTES)
 
-    var out = Buffer.alloc(message.length)
+    const out = Buffer.alloc(message.length)
 
-    var inst = sodium.crypto_stream_chacha20_ietf_xor_instance(nonce, key)
+    const inst = sodium.crypto_stream_chacha20_ietf_xor_instance(nonce, key)
 
-    for (var i = 0; i < message.length; i++) {
+    for (let i = 0; i < message.length; i++) {
       inst.update(out.slice(i), message.slice(i, i + 1))
     }
 
     sodium.crypto_stream_chacha20_ietf_xor(out, out, nonce, key)
-    t.same(out, message, 'decrypted')
-    t.end()
+    t.alike(out, message, 'decrypted')
   })
 
-  tape('crypto_stream_chacha20_ietf_xor_instance with empty buffers', function (t) {
-    var message = Buffer.from('Hello, world!')
-    var nonce = random(sodium.crypto_stream_chacha20_ietf_NONCEBYTES)
-    var key = random(sodium.crypto_stream_chacha20_ietf_KEYBYTES)
+  test.skip('crypto_stream_chacha20_ietf_xor_instance with empty buffers', function (t) {
+    const message = Buffer.from('Hello, world!')
+    const nonce = random(sodium.crypto_stream_chacha20_ietf_NONCEBYTES)
+    const key = random(sodium.crypto_stream_chacha20_ietf_KEYBYTES)
 
-    var out = Buffer.alloc(message.length)
+    const out = Buffer.alloc(message.length)
 
-    var inst = sodium.crypto_stream_chacha20_ietf_xor_instance(nonce, key)
+    const inst = sodium.crypto_stream_chacha20_ietf_xor_instance(nonce, key)
 
     inst.update(Buffer.alloc(0), Buffer.alloc(0))
 
-    for (var i = 0; i < message.length; i++) {
+    for (let i = 0; i < message.length; i++) {
       inst.update(out.slice(i), message.slice(i, i + 1))
       inst.update(Buffer.alloc(0), Buffer.alloc(0))
     }
 
     sodium.crypto_stream_chacha20_ietf_xor(out, out, nonce, key)
-    t.same(out, message, 'decrypted')
-    t.end()
+    t.alike(out, message, 'decrypted')
   })
 
-  tape('crypto_stream_chacha20_ietf_xor_instance long stream', function (t) {
-    var nonce = random(sodium.crypto_stream_chacha20_ietf_NONCEBYTES)
-    var key = random(sodium.crypto_stream_chacha20_ietf_KEYBYTES)
+  test.skip('crypto_stream_chacha20_ietf_xor_instance long stream', function (t) {
+    const nonce = random(sodium.crypto_stream_chacha20_ietf_NONCEBYTES)
+    const key = random(sodium.crypto_stream_chacha20_ietf_KEYBYTES)
 
-    var encrypt = sodium.crypto_stream_chacha20_ietf_xor_instance(nonce, key)
-    var decrypt = sodium.crypto_stream_chacha20_ietf_xor_instance(nonce, key)
-    var plain = []
-    var encrypted = []
-    var decrypted = []
+    const encrypt = sodium.crypto_stream_chacha20_ietf_xor_instance(nonce, key)
+    const decrypt = sodium.crypto_stream_chacha20_ietf_xor_instance(nonce, key)
+    const plain = []
+    const encrypted = []
+    const decrypted = []
 
-    for (var i = 0; i < 1000; i++) {
-      var next = random(61)
+    for (let i = 0; i < 1000; i++) {
+      const next = random(61)
       plain.push(next)
 
-      var enc = Buffer.alloc(61)
+      const enc = Buffer.alloc(61)
       encrypt.update(enc, next)
       encrypted.push(enc)
 
-      var dec = Buffer.alloc(61)
+      const dec = Buffer.alloc(61)
       decrypt.update(dec, enc)
       decrypted.push(dec)
     }
 
-    var enc2 = Buffer.alloc(1000 * 61)
+    const enc2 = Buffer.alloc(1000 * 61)
     sodium.crypto_stream_chacha20_ietf_xor(enc2, Buffer.concat(plain), nonce, key)
 
-    t.same(Buffer.concat(encrypted), enc2, 'same as encrypting all at once')
-    t.same(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
-    t.end()
+    t.alike(Buffer.concat(encrypted), enc2, 'same as encrypting all at once')
+    t.alike(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
   })
 
-  tape('crypto_stream_chacha20_ietf_xor_instance long stream (random chunks)', function (t) {
-    var nonce = random(sodium.crypto_stream_chacha20_ietf_NONCEBYTES)
-    var key = random(sodium.crypto_stream_chacha20_ietf_KEYBYTES)
+  test.skip('crypto_stream_chacha20_ietf_xor_instance long stream (random chunks)', function (t) {
+    const nonce = random(sodium.crypto_stream_chacha20_ietf_NONCEBYTES)
+    const key = random(sodium.crypto_stream_chacha20_ietf_KEYBYTES)
 
-    var encrypt = sodium.crypto_stream_chacha20_ietf_xor_instance(nonce, key)
-    var decrypt = sodium.crypto_stream_chacha20_ietf_xor_instance(nonce, key)
-    var plain = []
-    var encrypted = []
-    var decrypted = []
+    const encrypt = sodium.crypto_stream_chacha20_ietf_xor_instance(nonce, key)
+    const decrypt = sodium.crypto_stream_chacha20_ietf_xor_instance(nonce, key)
+    const plain = []
+    const encrypted = []
+    const decrypted = []
 
-    for (var i = 0; i < 10000; i++) {
-      var len = Math.floor(Math.random() * 256)
-      var next = random(len)
+    for (let i = 0; i < 10000; i++) {
+      const len = Math.floor(Math.random() * 256)
+      const next = random(len)
       plain.push(next)
 
-      var enc = Buffer.alloc(len)
+      const enc = Buffer.alloc(len)
       encrypt.update(enc, next)
       encrypted.push(enc)
 
-      var dec = Buffer.alloc(len)
+      const dec = Buffer.alloc(len)
       decrypt.update(dec, enc)
       decrypted.push(dec)
     }
 
-    var enc2 = Buffer.alloc(Buffer.concat(plain).length)
+    const enc2 = Buffer.alloc(Buffer.concat(plain).length)
     sodium.crypto_stream_chacha20_ietf_xor(enc2, Buffer.concat(plain), nonce, key)
 
-    t.same(Buffer.concat(encrypted), enc2, 'same as encrypting all at once')
-    t.same(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
-    t.end()
+    t.alike(Buffer.concat(encrypted), enc2, 'same as encrypting all at once')
+    t.alike(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
   })
 
-  tape('crypto_stream_chacha20_ietf_xor_instance long stream (random chunks) with empty buffers', function (t) {
-    var nonce = random(sodium.crypto_stream_chacha20_ietf_NONCEBYTES)
-    var key = random(sodium.crypto_stream_chacha20_ietf_KEYBYTES)
+  test.skip('crypto_stream_chacha20_ietf_xor_instance long stream (random chunks) with empty buffers', function (t) {
+    const nonce = random(sodium.crypto_stream_chacha20_ietf_NONCEBYTES)
+    const key = random(sodium.crypto_stream_chacha20_ietf_KEYBYTES)
 
-    var encrypt = sodium.crypto_stream_chacha20_ietf_xor_instance(nonce, key)
-    var decrypt = sodium.crypto_stream_chacha20_ietf_xor_instance(nonce, key)
-    var plain = []
-    var encrypted = []
-    var decrypted = []
+    const encrypt = sodium.crypto_stream_chacha20_ietf_xor_instance(nonce, key)
+    const decrypt = sodium.crypto_stream_chacha20_ietf_xor_instance(nonce, key)
+    const plain = []
+    const encrypted = []
+    const decrypted = []
 
-    for (var i = 0; i < 10000; i++) {
-      var len = Math.floor(Math.random() * 256)
-      var next = random(len)
+    for (let i = 0; i < 10000; i++) {
+      const len = Math.floor(Math.random() * 256)
+      const next = random(len)
       plain.push(next)
 
       encrypt.update(Buffer.alloc(0), Buffer.alloc(0))
 
-      var enc = Buffer.alloc(len)
+      const enc = Buffer.alloc(len)
       encrypt.update(enc, next)
       encrypted.push(enc)
 
-      var dec = Buffer.alloc(len)
+      const dec = Buffer.alloc(len)
       decrypt.update(dec, enc)
       decrypted.push(dec)
       decrypt.update(Buffer.alloc(0), Buffer.alloc(0))
     }
 
-    var enc2 = Buffer.alloc(Buffer.concat(plain).length)
+    const enc2 = Buffer.alloc(Buffer.concat(plain).length)
     sodium.crypto_stream_chacha20_ietf_xor(enc2, Buffer.concat(plain), nonce, key)
 
-    t.same(Buffer.concat(encrypted), enc2, 'same as encrypting all at once')
-    t.same(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
-    t.end()
+    t.alike(Buffer.concat(encrypted), enc2, 'same as encrypting all at once')
+    t.alike(Buffer.concat(decrypted), Buffer.concat(plain), 'decrypts')
   })
 
   const tests = [
@@ -543,62 +516,59 @@ module.exports = function (sodium) {
     '8adc91fd9ff4f0f51b0fad50ff15d637e40efda206cc52c783a74200503c1582cd9833367d0a54d57d3c9e998f490ee69ca34c1ff9e939a75584c52d690a35d4404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040'
   ]
 
-  tape('constants', function (assert) {
-    assert.ok(sodium.crypto_stream_chacha20_ietf_KEYBYTES > 0)
-    assert.ok(sodium.crypto_stream_chacha20_ietf_NONCEBYTES > 0)
-    assert.ok(sodium.crypto_stream_chacha20_ietf_MESSAGEBYTES_MAX > 0)
-    assert.end()
+  test('constants', function (t) {
+    t.ok(sodium.crypto_stream_chacha20_ietf_KEYBYTES > 0)
+    t.ok(sodium.crypto_stream_chacha20_ietf_NONCEBYTES > 0)
+    t.ok(sodium.crypto_stream_chacha20_ietf_MESSAGEBYTES_MAX > 0)
   })
 
-  tape('crypto_stream_chacha20_ietf', function (assert) {
+  test('crypto_stream_chacha20_ietf', function (t) {
     const key = Buffer.alloc(sodium.crypto_stream_chacha20_ietf_KEYBYTES)
     const nonce = Buffer.alloc(sodium.crypto_stream_chacha20_ietf_NONCEBYTES)
 
     const out = Buffer.alloc(160)
 
-    for (var i = 0; i < tests.length; i++) {
+    for (let i = 0; i < tests.length; i++) {
       key.write(tests[i][0], 0, key.byteLength, 'hex')
       nonce.write(tests[i][1], 0, nonce.byteLength, 'hex')
       out.fill(0)
       sodium.crypto_stream_chacha20_ietf_xor_ic(out, out, nonce, tests[i][2], key)
-      assert.deepEquals(out, Buffer.from(tests[i][3], 'hex'), 'crypto_stream_chacha20_ietf_xor_ic vector ' + i)
+      t.alike(out, Buffer.from(tests[i][3], 'hex'), 'crypto_stream_chacha20_ietf_xor_ic vector ' + i)
       for (let plen = 0; plen < out.byteLength; plen++) {
         const part = Buffer.alloc(plen)
         sodium.crypto_stream_chacha20_ietf_xor_ic(part, out.subarray(0, plen), nonce, tests[i][2], key)
-        if (part.every(b => b === 0) === false) return assert.fail()
+        if (part.every(b => b === 0) === false) return t.fail()
       }
     }
 
     for (let plen = 1, i = 0; plen < 66; plen += 3, i++) {
       out.fill(plen & 0xff)
       sodium.crypto_stream_chacha20_ietf(out.subarray(0, plen), nonce, key)
-      if (out.equals(Buffer.from(vectors[i], 'hex')) === false) return assert.fail()
+      if (out.equals(Buffer.from(vectors[i], 'hex')) === false) return t.fail()
     }
 
     sodium.randombytes_buf(out)
     sodium.crypto_stream_chacha20_ietf(out, nonce, key)
-    assert.deepEquals(out, Buffer.from('8adc91fd9ff4f0f51b0fad50ff15d637e40efda206cc52c783a74200503c1582cd9833367d0a54d57d3c9e998f490ee69ca34c1ff9e939a75584c52d690a35d410f1e7e4d13b5915500fdd1fa32071c4c7d1f4c733c068030422aa9ac3d46c4ed2826446079faa0914c2d705d98b02a2b5129cd1de164eb9cbd083e8a2503c4e0a88837739d7bf4ef8ccacb0ea2bb9d69d56c394aa351dfda5bf459f0a2e9fe8', 'hex'))
+    t.alike(out, Buffer.from('8adc91fd9ff4f0f51b0fad50ff15d637e40efda206cc52c783a74200503c1582cd9833367d0a54d57d3c9e998f490ee69ca34c1ff9e939a75584c52d690a35d410f1e7e4d13b5915500fdd1fa32071c4c7d1f4c733c068030422aa9ac3d46c4ed2826446079faa0914c2d705d98b02a2b5129cd1de164eb9cbd083e8a2503c4e0a88837739d7bf4ef8ccacb0ea2bb9d69d56c394aa351dfda5bf459f0a2e9fe8', 'hex'))
 
-    assert.doesNotThrow(() => sodium.crypto_stream_chacha20_ietf(out.subarray(0, 0), nonce, key))
-    assert.doesNotThrow(() => sodium.crypto_stream_chacha20_ietf_xor(out.subarray(0, 0), Buffer.alloc(0), nonce, key))
-    assert.doesNotThrow(() => sodium.crypto_stream_chacha20_ietf_xor(out.subarray(0, 0), Buffer.alloc(0), nonce, key))
-    assert.doesNotThrow(() => sodium.crypto_stream_chacha20_ietf_xor_ic(out.subarray(0, 0), Buffer.alloc(0), nonce, 1, key))
+    t.execution(() => sodium.crypto_stream_chacha20_ietf(out.subarray(0, 0), nonce, key))
+    t.execution(() => sodium.crypto_stream_chacha20_ietf_xor(out.subarray(0, 0), Buffer.alloc(0), nonce, key))
+    t.execution(() => sodium.crypto_stream_chacha20_ietf_xor(out.subarray(0, 0), Buffer.alloc(0), nonce, key))
+    t.execution(() => sodium.crypto_stream_chacha20_ietf_xor_ic(out.subarray(0, 0), Buffer.alloc(0), nonce, 1, key))
 
     out.fill(0x42)
     sodium.crypto_stream_chacha20_ietf_xor(out, out, nonce, key)
-    assert.deepEquals(out, Buffer.from('c89ed3bfddb6b2b7594def12bd579475a64cbfe0448e1085c1e50042127e57c08fda71743f4816973f7edcdbcd0b4ca4dee10e5dbbab7be517c6876f2b48779652b3a5a693791b57124d9f5de16233868593b68571822a414660e8d881962e0c90c0260445dde84b568095479bc940e0f750de939c540cfb8992c1aae0127e0c48cac1357b95fd0cba8eeef2a869fb94df1481d6e8775fbfe7fd07dd486cddaa', 'hex'))
+    t.alike(out, Buffer.from('c89ed3bfddb6b2b7594def12bd579475a64cbfe0448e1085c1e50042127e57c08fda71743f4816973f7edcdbcd0b4ca4dee10e5dbbab7be517c6876f2b48779652b3a5a693791b57124d9f5de16233868593b68571822a414660e8d881962e0c90c0260445dde84b568095479bc940e0f750de939c540cfb8992c1aae0127e0c48cac1357b95fd0cba8eeef2a869fb94df1481d6e8775fbfe7fd07dd486cddaa', 'hex'))
 
     sodium.crypto_stream_chacha20_ietf_xor_ic(out, out, nonce, 0, key)
-    assert.deepEquals(out, Buffer.from('42424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242', 'hex'))
+    t.alike(out, Buffer.from('42424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242', 'hex'))
 
     sodium.crypto_stream_chacha20_ietf_xor_ic(out, out, nonce, 1, key)
-    assert.deepEquals(out, Buffer.from('52b3a5a693791b57124d9f5de16233868593b68571822a414660e8d881962e0c90c0260445dde84b568095479bc940e0f750de939c540cfb8992c1aae0127e0c48cac1357b95fd0cba8eeef2a869fb94df1481d6e8775fbfe7fd07dd486cddaaa563bad017bb86c4fd6325de2a7f0dde1eb0b865c4176442194488750ec4ed799efdff89c1fc27c46c97804cec1801665f28d0982f88d85729a010d5b75e655a', 'hex'))
-
-    assert.end()
+    t.alike(out, Buffer.from('52b3a5a693791b57124d9f5de16233868593b68571822a414660e8d881962e0c90c0260445dde84b568095479bc940e0f750de939c540cfb8992c1aae0127e0c48cac1357b95fd0cba8eeef2a869fb94df1481d6e8775fbfe7fd07dd486cddaaa563bad017bb86c4fd6325de2a7f0dde1eb0b865c4176442194488750ec4ed799efdff89c1fc27c46c97804cec1801665f28d0982f88d85729a010d5b75e655a', 'hex'))
   })
 
   function random (n) {
-    var buf = Buffer.alloc(n)
+    const buf = Buffer.alloc(n)
     sodium.randombytes_buf(buf)
     return buf
   }

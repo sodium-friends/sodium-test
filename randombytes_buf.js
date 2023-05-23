@@ -1,5 +1,5 @@
-var test = require('tape')
-var freq = require('buffer-byte-frequency')
+const test = require('brittle')
+const freq = require('buffer-byte-frequency')
 
 module.exports = function (sodium) {
   test.skip('Various test cases', function (assert) {
@@ -14,11 +14,11 @@ module.exports = function (sodium) {
   })
 
   test('Generates random bytes', function (assert) {
-    var bufConst = Buffer.alloc(64)
+    const bufConst = Buffer.alloc(64)
     sodium.randombytes_buf(bufConst)
 
-    var buf1 = Buffer.alloc(64)
-    for (var i = 0; i < 1e4; i++) {
+    const buf1 = Buffer.alloc(64)
+    for (let i = 0; i < 1e4; i++) {
       sodium.randombytes_buf(buf1)
       if (Buffer.compare(buf1, bufConst) === 0) {
         assert.fail('Constant buffer should not be equal')
@@ -32,16 +32,16 @@ module.exports = function (sodium) {
   })
 
   test('Exceed quota', function (assert) {
-    var buf = Buffer.alloc(1 << 17)
+    const buf = Buffer.alloc(1 << 17)
     sodium.randombytes_buf(buf)
 
     freq(buf)
-    .map(function (cnt) {
-      return (cnt / 256) | 0
-    })
-    .forEach(function (cnt) {
-      if (cnt < 1 && cnt > 3) assert.fail('Statistically unreasonable')
-    })
+      .map(function (cnt) {
+        return (cnt / 256) | 0
+      })
+      .forEach(function (cnt) {
+        if (cnt < 1 && cnt > 3) assert.fail('Statistically unreasonable')
+      })
 
     assert.end()
   })

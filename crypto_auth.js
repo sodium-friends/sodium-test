@@ -1,12 +1,12 @@
 
-const tape = require('tape')
+const test = require('brittle')
 
 module.exports = function (sodium) {
-  tape('crypto_auth #1', t => {
+  test('crypto_auth #1', t => {
     // "Test Case 2" from RFC 4231
-    const key = stringToArray("Jefe", 32)
-    const c = stringToArray("what do ya want for nothing?")
-    const c1 = stringToArray("wwhat do ya want for nothing")
+    const key = stringToArray('Jefe', 32)
+    const c = stringToArray('what do ya want for nothing?')
+    const c1 = stringToArray('wwhat do ya want for nothing')
 
     const a = new Uint8Array(sodium.crypto_auth_BYTES)
 
@@ -21,7 +21,7 @@ module.exports = function (sodium) {
         0x7b, 0x9d, 0x83, 0x38, 0xeb, 0x1e, 0x3d, 0xdd,
         0xba, 0x8a, 0x9a, 0x35, 0x08, 0xd0, 0x34, 0xa1,
         0xec, 0xbe, 0x75, 0x11, 0x37, 0xfa, 0x1b, 0xcb,
-        0xa0, 0xf9, 0x2a, 0x3e, 0x6d, 0xfc, 0x79, 0x80,
+        0xa0, 0xf9, 0x2a, 0x3e, 0x6d, 0xfc, 0x79, 0x80
       ]),
       new Uint8Array([
         0xb9, 0xd1, 0x4c, 0x51, 0xa6, 0xd4, 0xdd, 0x41,
@@ -32,23 +32,22 @@ module.exports = function (sodium) {
     ]
 
     sodium.crypto_auth(a, c, key)
-    t.deepEqual(a, exp[0])
-    t.assert(sodium.crypto_auth_verify(exp[0], c, key))
+    t.alike(a, exp[0])
+    t.ok(sodium.crypto_auth_verify(exp[0], c, key))
 
     a.fill(0)
     sodium.crypto_auth(a, c1, key)
-    t.deepEqual(a, exp[1])
-    t.assert(sodium.crypto_auth_verify(exp[1], c1, key))
+    t.alike(a, exp[1])
+    t.ok(sodium.crypto_auth_verify(exp[1], c1, key))
 
     // Empty message tests
     a.fill(0)
     sodium.crypto_auth(a, new Uint8Array(0), key)
-    t.deepEqual(a, exp[2])
-    t.assert(sodium.crypto_auth_verify(exp[2], new Uint8Array(0), key))
-    t.end()
+    t.alike(a, exp[2])
+    t.ok(sodium.crypto_auth_verify(exp[2], new Uint8Array(0), key))
   })
 
-  tape('crypto_auth', function (t) {
+  test('crypto_auth', function (t) {
     const key = stringToArray('Jefe', 32)
     const c = stringToArray('what do ya want for nothing?')
     const a = new Uint8Array(sodium.crypto_auth_BYTES)
@@ -60,16 +59,14 @@ module.exports = function (sodium) {
 
     sodium.crypto_auth(a, c, key)
 
-    t.deepEqual(a, expected)
+    t.alike(a, expected)
     t.ok(sodium.crypto_auth_verify(a, c, key))
 
     c[Math.floor(Math.random() * c.length)] += 1
-    t.notOk(sodium.crypto_auth_verify(a, c, key))
-
-    t.end()
+    t.absent(sodium.crypto_auth_verify(a, c, key))
   })
 
-  tape('wrong keylength', t => {
+  test('wrong keylength', t => {
     const a = new Uint8Array(32)
     const c = new Uint8Array(0)
 
@@ -92,17 +89,15 @@ module.exports = function (sodium) {
       }
     }
 
-    t.pass("should not accept bad input length")
-    t.end()
+    t.pass('should not accept bad input length')
   })
 
-  tape('crypto_auth constants', t => {
-    t.equal(sodium.crypto_auth_BYTES, 32)
-    t.equal(sodium.crypto_auth_KEYBYTES, 32)
-    t.end()
+  test('crypto_auth constants', t => {
+    t.is(sodium.crypto_auth_BYTES, 32)
+    t.is(sodium.crypto_auth_KEYBYTES, 32)
   })
 
-  tape('rfc4231 test case #6', t => {
+  test('rfc4231 test case #6', t => {
     const keys = [
       new Uint8Array([
         0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b,
@@ -127,7 +122,7 @@ module.exports = function (sodium) {
         0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10,
         0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
         0x19, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-      ]),
+      ])
     ]
 
     const data = [
@@ -157,7 +152,7 @@ module.exports = function (sodium) {
         0xcd, 0xcd, 0xcd, 0xcd, 0xcd, 0xcd, 0xcd, 0xcd,
         0xcd, 0xcd, 0xcd, 0xcd, 0xcd, 0xcd, 0xcd, 0xcd,
         0xcd, 0xcd
-      ]),
+      ])
     ]
 
     const exp = [
@@ -184,18 +179,16 @@ module.exports = function (sodium) {
         0x90, 0xe5, 0xa8, 0xc5, 0xf6, 0x1d, 0x4a, 0xf7,
         0xe5, 0x76, 0xd9, 0x7f, 0xf9, 0x4b, 0x87, 0x2d,
         0xe7, 0x6f, 0x80, 0x50, 0x36, 0x1e, 0xe3, 0xdb
-      ]),
+      ])
     ]
 
     const a = new Uint8Array(sodium.crypto_auth_BYTES)
 
     for (let i = 0; i < keys.length; i++) {
       sodium.crypto_auth(a, data[i], keys[i])
-      t.same(a, exp[i])
-      t.assert(sodium.crypto_auth_verify(exp[i], data[i], keys[i]))
+      t.alike(a, exp[i])
+      t.ok(sodium.crypto_auth_verify(exp[i], data[i], keys[i]))
     }
-
-    t.end()
   })
 }
 
